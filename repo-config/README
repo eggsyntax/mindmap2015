@@ -1,0 +1,8 @@
+Installs all hook scripts into git's hooks configuration directory. 
+
+Note: All file extensions are stripped before being copied 
+
+usage: python init.py
+
+The two scripts in this directory add XMind support so that its file
+internals can be tracked.

@@ -1,0 +1,91 @@
+Core abstractions/interfaces
+
+- Hypermap
+    Git-like, in a general structural/philosophical way. DAG.
+    But plan for very frequent "commits", eg every keystroke/mouse action
+    Movable head pointer
+
+    Common operations:
+    - Scanning forward & backward
+    - random access by time
+
+    - is-head? -> boolean
+    - get-head -> hypernode
+    - get-hypernode (hypernode-id) -> hypernode 
+    - move-head -> nil [set head]
+    - commit-changes -> nil [add node, add edge from prev head to new node, move-head]
+    - diff -> hypernode
+    - merge -> hypernode
+
+    - (?): serialize (hypermap) 
+    - (?): sync -> hypermap
+
+    State:
+    - all nodes/full structure (maybe optimize later)
+    - head
+    - branch-heads
+
+- Hypernode
+    State:
+    - mindmap
+    - metadata
+
+- Mindmap
+    Tree data structure (which lets us have other data besides nodes, eg filename, current_node)
+    (Note to self: treat add-node and add-edge as additions + map transformations, in order
+    to properly return a mindmap.)
+
+    - add-node (mindmap) -> mindmap
+    - add-edge (mindmap) -> mindmap
+    - delete-node (node) -> mindmap
+    - delete-edge (edge) -> mindmap
+
+    - is-root? (node) -> boolean
+    - is-current? (node) -> boolean
+    - get-current() -> node
+    - set-current(node) -> nil (or node for convenience)
+    - get-root (node) -> node
+
+    Traversal operations:
+    - parent(node) -> node
+    - child(child-index?) -> node
+    - prev-sibling(node) -> node
+    - next-sibling(node) -> node
+
+    Make map seqable so that we get:
+    (breadth-first)
+    - filter (predicate, mindmap) -> mindmap
+    - map (function, mindmap) -> mindmap
+    - reduce (function, mindmap, starting) -> mindmap
+    
+    State:
+    - set of nodes
+    - set of edges
+    - current () -> node
+    - roots
+
+        (as-tree): lazily walk tree, skipping through all edges, showing only the node structure.
+
+    Common operations:
+    - traverse up & down from current
+    - 
+
+
+Nodes contain edges.
+    (defrecord Node [id content children parent])
+        - 'children' is a vector (ordered) of Nodes. 'parent' is a single node.
+        - 'content' is a map of arbitrary key-value pairs, maybe with lots of nesting.
+        Need to try to figure out how to create a constructor that will take action
+            on the parent param (adding the new node to the parent's children).
+    A node will produce subtree on demand with a fn that, for each child-edge, returns the
+        node it targets. The (lazy view of a) subtree thus produced contains only the node
+        structures, no edges.
+        In other words, it should be easy for the user to ignore the edges entirely.
+
+Edges have an origin, a destination, and a map of arbitrary attributes (eg: {:weight 3, :relationship "uses"}).
+    (defrecord Edge [id content origin destination])
+    We could, if we wanted, get a lazy tree view of just the edges, no nodes.
+    
+
+Difficulty:
+

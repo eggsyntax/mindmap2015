@@ -1,3 +1,5 @@
+TODO move to xmind
+
 Core abstractions/interfaces
 
 - Hypermap
@@ -32,8 +34,7 @@ Core abstractions/interfaces
 
 - Mindmap
     Tree data structure (which lets us have other data besides nodes, eg filename, current_node)
-    (Note to self: treat add-node and add-edge as additions + map transformations, in order
-    to properly return a mindmap.)
+    (Note to self: treat add-node and add-edge as additions + map transformations, in order to properly return a mindmap.)
 
     - add-node (mindmap) -> mindmap
     - add-edge (mindmap) -> mindmap

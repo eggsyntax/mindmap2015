@@ -34,7 +34,8 @@ Core abstractions/interfaces
 
 - Mindmap
     Tree data structure (which lets us have other data besides nodes, eg filename, current_node)
-    (Note to self: treat add-node and add-edge as additions + map transformations, in order to properly return a mindmap.)
+    (Note to self: treat add-node and add-edge as additions + map transformations, in order
+    to properly return a mindmap.)
 
     - add-node (mindmap) -> mindmap
     - add-edge (mindmap) -> mindmap
@@ -84,7 +85,7 @@ Nodes contain edges.
         In other words, it should be easy for the user to ignore the edges entirely.
 
 Edges have an origin, a destination, and a map of arbitrary attributes (eg: {:weight 3, :relationship "uses"}).
-    (defrecord Edge [id content origin destination])
+    (defrecord Edge [id attributes origin destination])
     We could, if we wanted, get a lazy tree view of just the edges, no nodes.
     
 

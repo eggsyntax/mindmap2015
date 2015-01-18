@@ -14,27 +14,77 @@ Hypermap
     Edge
     Cur"
 
-(defn default-node [] {:title "New mindmap"})
+(defn default-node [] {:id (ut/main-indexer)
+                       :title "New mindmap"})
 (default-node)
-(defn default-mindmap []
-  (let [first-node (default-node)]
-    {:nodes [first-node] 
-     :edges []
-     :cur first-node }))
+
+(defn default-mindmap
+  "Default mindmap contains one node, no edges."
+  []
+  (let [first-node (default-node)
+        first-id (:id default-node)]
+    {:id (ut/main-indexer)
+     :nodes {first-id first-node} 
+     :edges {}
+     :cur-pointer first-id}))
+
 (def hypermap
-  (let [first-mindmap (default-mindmap)]
-    (atom {:maps [first-mindmap]
-           :head first-mindmap
+  (let [first-mindmap (default-mindmap)
+        first-id (:id first-mindmap)]
+    (atom {:id (ut/main-indexer)
+           :maps {first-id first-mindmap}
+           :head-pointer first-id
            })))
+
 (print (ut/to-str @hypermap))
 
-(defn cur-title
-  "Return the title of the current node of a hypermap's current map"
+; There's a lot of redundancy in get-mm/get-node, and in
+; get-head/get-cur, which could be factored out, but I'm deliberately
+; leaving them separate because a) we need to be careful to keep them
+; separated in our mental models, and b) we may want to change the
+; implementation of one or both.
+
+(defn get-mm
+  "Extract a mindmap by id"
+  [hm id]
+  ((hm :maps) id))
+
+(get-mm @hypermap 6)
+
+(defn get-head
+  "Get the mindmap which is the current head of the hypermap"
   [hm]
-  (get-in hm [:head :cur :title]))
+  (get-mm hm (hm :head-pointer)))
 
-(cur-title @hypermap)
+(get-head @hypermap)
 
-; Observe that we can use get-in/assoc-in/update-in to dig down the
-; whole way.
-(get-in @hypermap [:head :nodes 0 :title])
+(defn get-node
+  "Extract a node by id"
+  [mm id]
+  ((mm :nodes) id))
+
+(defn get-cur
+  "Get the node which is the current node of a mindmap"
+  [mm]
+  (get-node mm (mm :cur-pointer)))
+
+(def head-map (get-head @hypermap))
+(get-cur head-map)
+
+(defn get-cur-from-hm
+  "Get the current node of the current head of the hypermap."
+  ; Could be expressed as polymorphism on get-cur, but again
+  ; I'm trying to make every effort to keep the levels distinct.
+  [hm]
+  (get-cur (get-head hm)))
+
+(get-cur-from-hm @hypermap)
+
+(defn cur-val
+  "Get a value from the current node"
+  [hm attribute]
+  (attribute (get-cur-from-hm hm))
+  )
+
+(cur-val @hypermap :title)
+

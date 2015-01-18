@@ -10,9 +10,9 @@
     (let [ai (java.util.concurrent.atomic.AtomicInteger.)]
       (fn [] (.addAndGet ai 1)))))
 
-(def test-index (get-indexer))
-(test-index)
-(test-index)
+(def main-index (get-indexer))
+(main-index)
+(main-index)
 
 (defn logged
   "Wrap any form in logged to have it printed to the console."

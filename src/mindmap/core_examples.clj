@@ -1,27 +1,24 @@
 (ns mindmap.core-examples
-  (:use [mindmap.core])
-  (:require [mindmap.util :as ut]))
+  (:use [mindmap.core]
+        [mindmap.util]))
 
 ; Just gives some examples of how the core functions work.
+
+
+(demo "foo")
 
 ; Create a hypermap for testing
 (def hypermap
   (let [first-mindmap (default-mindmap)
         first-id (:id first-mindmap)]
-    (atom {:id (ut/main-indexer)
+    (atom {:id (main-indexer)
            :maps {first-id first-mindmap}
            :map-edges {}
            :head-pointer first-id
            })))
 
-; Just for the sake of convenience, grab the
-; id of the default node we created. We'll later define functions
-; to do this less awkwardly.
-(def root-node-id
-  (let [head-map  ((:maps @hypermap) (@hypermap :head-pointer))]
-    (:cur-pointer head-map)) )
-
-(print (ut/to-str @hypermap))
+(demo @hypermap)
+(demo @hypermap)
 
 (get-mm @hypermap (:head-pointer @hypermap))
 
@@ -34,23 +31,28 @@
 
 (cur-val @hypermap :title)
 
-(print head-map)
-(print (ut/to-str @hypermap))
+(demo (:maps @hypermap))
+(demo (assoc-in @hypermap [:maps 1234] {:foo :bar}))
 
-(get-cur head-map)
-(get-node head-map root-node-id)
-(is-cur? head-map (get-node head-map root-node-id))
-(is-cur? head-map (get-node head-map (+ 1 root-node-id)))
+(demo (add-mindmap @hypermap (entity {:title "Fake new map"})))
+(def anode (entity {:title "Second node"}))
+(demo (add-node @hypermap anode))
 
-(:maps @hypermap)
-(assoc-in @hypermap [:maps 1234] {:foo :bar})
+; Update our test mindmap:
+(demo (swap! hypermap add-node anode))
+(demo @hypermap)
 
-(print (ut/to-str @hypermap))
-(print (ut/to-str (add-mindmap @hypermap (node {:foo :bar}))))
+(def anothernode (entity {:title "Third node"}))
+(demo anothernode)
 
-(def anode (node {:title "Second node"}))
-(ut/ppprint (add-node @hypermap anode))
+(demo (swap! hypermap add-node anothernode))
+(demo @hypermap)
 
-; We can now update our test mindmap:
-(swap! hypermap add-node anode)
-(ut/ppprint @hypermap)
+(def anedge (entity {:name "Devil-edge"}))
+(demo (add-edge @hypermap anedge))
+
+(defn print-head [hype] (ppprint (get-head hype)))
+(print-head @hypermap)
+(get-cur-from-hype @hypermap)
+(swap! hypermap add-node )
+

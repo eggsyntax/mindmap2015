@@ -37,8 +37,8 @@ Core abstractions/interfaces
     (Note to self: treat add-node and add-edge as additions + map transformations, in order
     to properly return a mindmap.)
 
-    - add-node (mindmap) -> mindmap
-    - add-edge (mindmap) -> mindmap
+    - add-node (mindmap node) -> mindmap
+    - add-edge (mindmap edge) -> mindmap
     - delete-node (node) -> mindmap
     - delete-edge (edge) -> mindmap
 

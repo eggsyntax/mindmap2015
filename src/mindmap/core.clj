@@ -3,24 +3,27 @@
   (:gen-class))
 
 ; See core-examples for usage
+; TODO consider adding Prismatic's schema for idiomatic data description
+; https://github.com/Prismatic/schema
 
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
   (println "Hello, World!"))
 
-(defn node
-  "Create a new node (which is just a map),
-  passing in any properties you want it to have.
-  eg (def mynode (node))
-  or (def mynode (node {:title \"foo\"}).  "
+(defn entity
+  "Create a new system entity (which is just a map), passing in any properties
+  you want it to have.  It will be given a unique id automatically. Any other
+  properties you want it to have should be passed in as a map.
+  eg (def mynode (entity))
+  or (def mynode (entity {:title \"foo\"}).  "
   [properties]
   (let [base-props {:id (ut/main-indexer)
                     :title ""}]
   (merge base-props properties)))
 
 (defn default-node []
-  (node {:title "New mindmap"}))
+  (entity {:title "New mindmap"}))
 
 (defn default-mindmap
   "Default mindmap contains one node, no edges."
@@ -99,17 +102,61 @@
       
   )
 
+(defn- add-mm-val
+  "Update some property of a mindmap (nodes or edges) by adding a new value,
+  returning an updated mindmap with a new id. "
+  [mm property val-to-add]
+  (let [id (:id val-to-add)
+        _ (println "Adding " property val-to-add) ]
+    ; nil args are probably a bad idea here -- although maybe it's fine 
+    ; to be starting from a nil mindmap. 
+    (assert (ut/no-nils? [mm property val-to-add]))
+    ; Nodes and edges have a numeric :id, so the added value better have one
+    (assert (number? (:id val-to-add)))
+    ; And the mindmap ought to have this property
+    (assert (property mm))
+
+    (-> mm
+        ; add the new value in the appropriate place
+        (assoc-in [property id] val-to-add)
+        ; and give the modified mm a new id
+        (assoc :id (ut/main-indexer)))))
+
 (defn add-node
   "Add this node to the head mindmap of this hypermap, and set it as the
   current node. Does not create any edges in the mindmap. Return the modified
   hypermap."
   [hype node]
+  (let [mm (get-head hype)
+        new-mm (add-mm-val mm :nodes node)]
+    (add-mindmap hype new-mm)))
 
-    (let [mm (get-head hype)
-          id (:id node)
-          ; Create a new mindmap with the new node and a new id        
-          new-mm (-> mm 
-                     (assoc-in [:nodes id] node) 
-                     (assoc :id (ut/main-indexer)))]
-      (add-mindmap hype new-mm)))
+"
+;TODO YOUAREHERE
 
+Should edges be stored by id like everything else, or be identified by [origin, dest]?
+- entity id:
+  - behavior matches the rest of the system
+  - would need a separate place to store edges by [origin, dest] so that we could get
+    them quickly, so then there would be some redundancy.
+    But that place would be an implementation detail and could be swapped out at will
+    (eg adjacency matrix vs adjacency list)
+  - easy to have multiple edges between same pair of nodes
+- [origin, dest]
+  - less redundancy
+  - better match with everything else
+  - trickier to model multiple edges between same pair of nodes (would instead probably
+    have to treat it as a single edge with multiple attributes)
+
+"
+
+(defn add-edge
+  "Add an edge to the head mindmap of this hypermap. Return the modified hypermap."
+  ;TODO youarehere: now add a second arity that creates an edge on demand and then
+  ; calls the existing arity -- or else create a function which creates edges.
+  [hype edge]
+  (let [mm (get-head hype)
+        new-mm (add-mm-val mm :edges edge) ]
+    (add-mindmap hype new-mm)
+    )
+  )

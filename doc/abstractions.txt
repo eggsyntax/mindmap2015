@@ -42,7 +42,7 @@ Core abstractions/interfaces
     - delete-node (node) -> mindmap
     - delete-edge (edge) -> mindmap
 
-    - is-root? (node) -> boolean
+    - is-root? (node) -> boolean (may be true of multiple nodes)
     - is-current? (node) -> boolean
     - get-current() -> node
     - set-current(node) -> nil (or node for convenience)
@@ -66,13 +66,12 @@ Core abstractions/interfaces
     - current () -> node
     - roots
 
-        (as-tree): lazily walk tree, skipping through all edges, showing only the node structure.
+    Other functions to consider:
+    as-tree: lazily walk tree, skipping through all edges, showing only the node structure.
+    partition: return the distinct subgraphs (often only 1)
 
-    Common operations:
-    - traverse up & down from current
-    - 
 
-FROM HERE ON, THIS IS NOT UP TO DATE
+FROM HERE ON, THIS IS NOT UP TO DATE WITH OUR LAST MEETING
 
 Nodes contain edges.
     (defrecord Node [id content children parent])

@@ -10,9 +10,9 @@
     (let [ai (java.util.concurrent.atomic.AtomicInteger.)]
       (fn [] (.addAndGet ai 1)))))
 
-(def main-index (get-indexer))
-(main-index)
-(main-index)
+(def main-indexer (get-indexer))
+(main-indexer)
+(main-indexer)
 
 (defn logged
   "Wrap any form in logged to have it printed to the console."
@@ -30,7 +30,10 @@
     (pprint thing w)
     (.toString w)))
 
-(to-str test-index)
+(to-str main-indexer)
+
+(defn ppprint [thing]
+  (println (to-str thing)))
 
 (defn spaces [n]
   "Get some spaces for padding a string"

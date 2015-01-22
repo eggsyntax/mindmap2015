@@ -6,6 +6,21 @@
 ; TODO consider adding Prismatic's schema for idiomatic data description
 ; https://github.com/Prismatic/schema
 
+"
+
+TODO
+
+Timestamps (which only hypermap nodes have)
+separate out per-context functionality
+
+
+Node ID remains constant when node changes (eg new title)
+    - double-check existing code
+
+
+Nodes and edges don't know anything about each other. An edge doesn't know what nodes it connects. Only the mindmap knows.
+"
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
@@ -18,8 +33,7 @@
   eg (def mynode (entity))
   or (def mynode (entity {:title \"foo\"}).  "
   [properties]
-  (let [base-props {:id (ut/main-indexer)
-                    :title ""}]
+  (let [base-props {:id (ut/main-indexer)}]
   (merge base-props properties)))
 
 (defn default-node []
@@ -134,26 +148,20 @@
 "
 ;TODO YOUAREHERE
 
-Should edges be stored by id like everything else, or be identified by [origin, dest]?
-- entity id:
-  - behavior matches the rest of the system
-  - would need a separate place to store edges by [origin, dest] so that we could get
-    them quickly, so then there would be some redundancy.
-    But that place would be an implementation detail and could be swapped out at will
-    (eg adjacency matrix vs adjacency list)
-  - easy to have multiple edges between same pair of nodes
-- [origin, dest]
-  - less redundancy
-  - better match with everything else
-  - trickier to model multiple edges between same pair of nodes (would instead probably
-    have to treat it as a single edge with multiple attributes)
+Edges are stored by id like nodes are. Connections between nodes (via edges) are stored
+elsewhere, perhaps in an adjacency list or adj matrix (but abstracted behind an interface)
 
+Graph search & filtering functions can use either all edges, or only edges with some subset
+of attributes.
 "
 
 (defn add-edge
   "Add an edge to the head mindmap of this hypermap. Return the modified hypermap."
-  ;TODO youarehere: now add a second arity that creates an edge on demand and then
+  ;TODO change this - add-edge should take a hypermap, an edge, an origin, and a destination.
+
+  ;TODO : now add a second arity that creates an edge on demand and then
   ; calls the existing arity -- or else create a function which creates edges.
+  ; Consider interning edges for performance. http://nyeggen.com/post/2012-04-09-clojure/
   [hype edge]
   (let [mm (get-head hype)
         new-mm (add-mm-val mm :edges edge) ]

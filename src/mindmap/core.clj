@@ -21,6 +21,13 @@ Node ID remains constant when node changes (eg new title)
 Nodes and edges don't know anything about each other. An edge doesn't know what nodes it connects. Only the mindmap knows.
 "
 
+"
+There might be an interesting argument that we shouldn't even have nodes or edges in the mindmap,
+just a hashmap of entities by id, each of which has a type, eg :node or :edge. Then getting all
+nodes just means filtering entities on :type :node. But I suppose that's just begging for
+efficiency problems.
+"
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
@@ -140,31 +147,43 @@ Nodes and edges don't know anything about each other. An edge doesn't know what 
   "Add this node to the head mindmap of this hypermap, and set it as the
   current node. Does not create any edges in the mindmap. Return the modified
   hypermap."
+  ; TODO does adding a node make it cur?
   [hype node]
   (let [mm (get-head hype)
         new-mm (add-mm-val mm :nodes node)]
     (add-mindmap hype new-mm)))
 
-"
-;TODO YOUAREHERE
-
-Edges are stored by id like nodes are. Connections between nodes (via edges) are stored
-elsewhere, perhaps in an adjacency list or adj matrix (but abstracted behind an interface)
-
+"Let's say for now that adjacency is represented by a map of maps: origin:dest:edge
+Adjacency representation, whatever it is, should be able to be addressed as a nested map from
+origin to destination to a set of edge entities (a set because we might conceivably want to
+represent more than one edge between a given pair of nodes).
 Graph search & filtering functions can use either all edges, or only edges with some subset
-of attributes.
-"
+of attributes."
 
 (defn add-edge
-  "Add an edge to the head mindmap of this hypermap. Return the modified hypermap."
-  ;TODO change this - add-edge should take a hypermap, an edge, an origin, and a destination.
-
-  ;TODO : now add a second arity that creates an edge on demand and then
-  ; calls the existing arity -- or else create a function which creates edges.
+  "Add an edge to the head mindmap of this hypermap. Return the modified hypermap.
+  Parameters:
+    Hypermap
+    Origin node
+    Destination node
+    Map of attributes you would like the edge to have. id will be added automatically."
   ; Consider interning edges for performance. http://nyeggen.com/post/2012-04-09-clojure/
-  [hype edge]
-  (let [mm (get-head hype)
-        new-mm (add-mm-val mm :edges edge) ]
-    (add-mindmap hype new-mm)
-    )
-  )
+  [hype origin dest attributes] ; 
+
+  (let [edge (entity attributes)
+        mm (get-head hype)
+        ; Get the current set of edges from this origin to this dest
+        cur-adjacency (get-in (:adjacency mm) [(:id origin) (:id dest)])
+        ; Update the set to include the new edge
+        updated-adjacency (conj cur-adjacency (:id edge))
+        new-mm (-> mm
+                   ; create a new mindmap based on the old, but with the new edge added
+                   (add-mm-val :edges edge)
+                   ; and an entry in the adjacency representation
+                   (assoc-in [:adjacency
+                              (:id origin)
+                              (:id dest)]
+                             updated-adjacency))]
+    (add-mindmap hype new-mm)))
+
+

@@ -48,11 +48,12 @@
 (demo (swap! hypermap add-node anothernode))
 (demo @hypermap)
 
-(def anedge (entity {:name "Devil-edge"}))
-(demo (add-edge @hypermap anedge))
+(def cur (get-cur-from-hype @hypermap))
+(demo (swap! hypermap add-edge anode {:title "Edge 1"}))
+(demo (swap! hypermap add-edge anode anothernode {:title "Edge 2"}))
 
 (defn print-head [hype] (ppprint (get-head hype)))
 (print-head @hypermap)
 (get-cur-from-hype @hypermap)
-(swap! hypermap add-node )
 
+(demo (seq @hypermap))

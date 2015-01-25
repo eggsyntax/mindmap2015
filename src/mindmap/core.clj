@@ -160,6 +160,17 @@ represent more than one edge between a given pair of nodes).
 Graph search & filtering functions can use either all edges, or only edges with some subset
 of attributes."
 
+(defn- add-adjacency
+  "Add an adjacency relationship to a mindmap, connecting two nodes through an edge.
+  Return modified mindmap."
+  [mm origin dest edge]
+  ; set-conj is just conj, but ensures return value is a set.
+  ; Handles the case where the incoming set is nil.
+  (letfn [(set-conj [the-set item] (set (conj the-set item)) )]
+    (update-in mm
+      [:adjacency (:id origin) (:id dest)]
+      set-conj (:id edge))))
+
 (defn add-edge
   "Add an edge to the head mindmap of this hypermap. Return the modified hypermap.
   Parameters:
@@ -170,19 +181,14 @@ of attributes."
   ; Consider interning edges for performance. http://nyeggen.com/post/2012-04-09-clojure/
   [hype origin dest attributes]
 
-  (let [; First create the new edge
+  (let [mm (get-head hype)
+        ; create the new edge
         edge (entity attributes)
-        mm (get-head hype)
-        ; set-conj is just conj, but ensures return value is a set. Is there a cleaner way?
-        set-conj #(set (conj %1 %2))
-
         new-mm (-> mm
                    ; create a new mindmap based on the old, but with the new edge added
                    (add-mm-val :edges edge)
                    ; and with a new entry in the adjacency representation
-                   (update-in
-                     [:adjacency (:id origin) (:id dest)]
-                     set-conj (:id edge)))]
+                   (add-adjacency origin dest edge))]
     (add-mindmap hype new-mm)))
 
 

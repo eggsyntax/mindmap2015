@@ -44,7 +44,7 @@
 (defmacro demo
   "demo macro just prints itself and its results to console" 
   [form]
-  (println form)
+  (println "***" form "***")
   (println)
   (ppprint (eval form))
 )
@@ -54,5 +54,4 @@
   )
 
 (no-nils? [1 2 3])
-(no-nils? [1 2 nil])
 (no-nils? [1 nil 3])

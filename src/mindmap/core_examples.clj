@@ -49,8 +49,11 @@
 (demo @hypermap)
 
 (def cur (get-cur-from-hype @hypermap))
-(demo (swap! hypermap add-edge anode {:title "Edge 1"}))
+(demo (swap! hypermap add-edge cur anode {:title "Edge 1"}))
 (demo (swap! hypermap add-edge anode anothernode {:title "Edge 2"}))
+; We can add a second edge between the same pair of nodes (some edge that I just made up)
+(demo (swap! hypermap add-edge anode anothernode
+             {:title "Edge 3" :attributes {:type :file-contains}}))
 
 (defn print-head [hype] (ppprint (get-head hype)))
 (print-head @hypermap)

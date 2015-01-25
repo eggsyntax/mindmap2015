@@ -168,22 +168,19 @@ of attributes."
     Destination node
     Map of attributes you would like the edge to have. id will be added automatically."
   ; Consider interning edges for performance. http://nyeggen.com/post/2012-04-09-clojure/
-  [hype origin dest attributes] ; 
+  [hype origin dest attributes]
 
-  (let [edge (entity attributes)
+  (let [; First create the new edge
+        edge (entity attributes)
         mm (get-head hype)
-        ; Get the current set of edges from this origin to this dest
-        cur-adjacency (get-in (:adjacency mm) [(:id origin) (:id dest)])
-        ; Update the set to include the new edge
-        updated-adjacency (conj cur-adjacency (:id edge))
+
         new-mm (-> mm
                    ; create a new mindmap based on the old, but with the new edge added
                    (add-mm-val :edges edge)
-                   ; and an entry in the adjacency representation
-                   (assoc-in [:adjacency
-                              (:id origin)
-                              (:id dest)]
-                             updated-adjacency))]
+                   ; and with a new entry in the adjacency representation
+                   (update-in
+                     [:adjacency (:id origin) (:id dest)]
+                     conj (:id edge)))]
     (add-mindmap hype new-mm)))
 
 

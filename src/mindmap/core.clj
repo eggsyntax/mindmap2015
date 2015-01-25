@@ -173,6 +173,8 @@ of attributes."
   (let [; First create the new edge
         edge (entity attributes)
         mm (get-head hype)
+        ; set-conj is just conj, but ensures return value is a set. Is there a cleaner way?
+        set-conj #(set (conj %1 %2))
 
         new-mm (-> mm
                    ; create a new mindmap based on the old, but with the new edge added
@@ -180,7 +182,7 @@ of attributes."
                    ; and with a new entry in the adjacency representation
                    (update-in
                      [:adjacency (:id origin) (:id dest)]
-                     conj (:id edge)))]
+                     set-conj (:id edge)))]
     (add-mindmap hype new-mm)))
 
 

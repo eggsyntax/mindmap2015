@@ -1,5 +1,6 @@
 (ns mindmap.core
-  (:require [mindmap.util :as ut])
+  (:require [mindmap.util :as ut]
+            [clojure.set :refer [union]])
   (:gen-class))
 
 ; See core-examples for usage
@@ -72,11 +73,26 @@ efficiency problems.
   [hype]
   (get-mm hype (hype :head-pointer)))
 
-(defn get-node
-  "Extract a node by id"
-  [mm id]
-  ((mm :nodes) id))
+(defn get-entity
+  "Extract an entity of some type by id"
+  [mm ent-type id]
+  ((ent-type mm) id))
 
+(defn get-node
+"Extract a node by id"
+  [mm id]
+  (get-entity mm :nodes id))
+
+(defn get-edge
+"Extract an edge by id"
+  [mm id]
+  (get-entity mm :edges id))
+
+; (defn get-node
+;   "Extract a node by id"
+;   [mm id]
+;   ((mm :nodes) id))
+ 
 (defn get-cur
   "Get the node which is the current node of a mindmap"
   [mm]
@@ -166,7 +182,7 @@ of attributes."
   [mm origin dest edge]
   ; set-conj is just conj, but ensures return value is a set.
   ; Handles the case where the incoming set is nil.
-  (letfn [(set-conj [the-set item] (set (conj the-set item)) )]
+  (letfn [(set-conj [the-set item] (set (conj the-set item)))]
     (update-in mm
       [:adjacency (:id origin) (:id dest)]
       set-conj (:id edge))))
@@ -191,4 +207,61 @@ of attributes."
                    (add-adjacency origin dest edge))]
     (add-mindmap hype new-mm)))
 
+(defn apply-filters
+  "Apply multiple filters, returning a list of elements which satisfy them all."
+  ; Could probably be made more efficient by shortcutting with a :while, but that
+  ;   would require inverting the loop order (ie loop over collection outside filters
+  [filter-list coll]
+  (if-not filter-list
+    ; if filter-list is empty, we're done
+    coll
+    ; otherwise apply this filter and recurse on the rest
+    (let [[cur-filter & remaining-filters] filter-list
+          filtered-coll (filter cur-filter coll)]
+      (set (apply-filters remaining-filters filtered-coll)))))
 
+(defn- get-adjacency
+  [hype]
+  (:adjacency (get-head hype)))
+
+;TODO YOUAREHERE Just got this working properly. Could almost certainly be improved
+; by some reorganization and simplification. "Older version," below, is dead code.
+; Open question: doc says "return all edges" but in fact it returns all edge ids.
+; Do we care? If we express in terms of edges, more interesting filters become natural.
+(defn edges-from
+  "Return all edges originating at this node, optionally applying a filterchain."
+  ; Simple version with no filter
+  ([hype node]
+    (apply 
+      union ; they come out as a list of sets which must be joined
+      (let [adjacency (get-adjacency hype)]
+        (for [[origin dest-struct] adjacency :when (= origin (:id node))
+              [dest edges] dest-struct]
+          edges))))
+
+  ; With filter: wrap filtering around simple version
+  ([hype node filter-chain]
+   (apply-filters
+     filter-chain
+     (edges-from hype node))))
+
+; Older version of the above
+(defn edges-from
+  "Return all edges originating at this node, optionally applying a filterchain."
+  ([hype node]
+    (edges-from hype node nil))
+  ([hype node filter-chain]
+    (let [adjacency (:adjacency (get-head hype))]
+      ; Apply any filters (edges are multiple sets, so union them first)
+      (apply-filters
+        filter-chain 
+        (apply union
+          (for [[origin dest-struct] adjacency :when (= origin (:id node))
+                [dest edges] dest-struct]
+              edges))))))
+
+(defn delete-node
+  "Delete current node from the head mindmap, returning a modified hypermap.
+  New current node is the (first) parent of the deleted node."
+  [hype ]
+  )

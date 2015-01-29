@@ -3,7 +3,8 @@
         [mindmap.util]))
 
 ; Just gives some examples of how the core functions work.
-
+; Warning! Anything in here with hardcoded numbers won't succeed across
+; runs, because those numbers change.
 
 (demo "foo")
 
@@ -54,12 +55,14 @@
 
 ; We can add a second edge between the same pair of nodes (some type of edge that I just made up)
 (demo (swap! hypermap add-edge anode anothernode
-             {:title "Edge 3" :attributes {:type :file-contains}}))
+             {:title "Edge 3" :type :file-contains}))
 (demo (swap! hypermap add-edge anode cur {:title "Edge 4" :type :whatev}))
 
 (defn print-head [hype] (ppprint (get-head hype)))
 (print-head @hypermap)
 (get-cur-from-hype @hypermap)
+
+(get-edges @hypermap [67 69])
 
 (get-head @hypermap) 
 ((:nodes (get-head @hypermap)) 101)
@@ -76,15 +79,19 @@
 
 (def ef (edges-from @hypermap anode))
 (:nodes (get-head @hypermap))
-(:type (:id anode) ((:nodes (get-head @hypermap)) ))
+; (:type (:id anode) ((:nodes (get-head @hypermap)) ))
 (def edges (:edges (get-head @hypermap)))
 (println edges)
 
 (get-node (get-head @hypermap) (:id anode))
 (def child-filter #(= (:type (get-node (get-head @hypermap) %)) :child))
-(def test-filter #(> % 106))
+(def test-filter #(= (:type %) :child))
 
 (demo (edges-from @hypermap anode))
+(demo (apply-filters
+        [test-filter]
+        (edges-from @hypermap anode))) 
+
 (demo (edges-from @hypermap anode [test-filter]))
 
 (demo (edges-from @hypermap anode ))

@@ -196,7 +196,6 @@ of attributes."
     Map of attributes you would like the edge to have. id will be added automatically."
   ; Consider interning edges for performance. http://nyeggen.com/post/2012-04-09-clojure/
   [hype origin dest attributes]
-
   (let [mm (get-head hype)
         ; create the new edge
         edge (entity attributes)
@@ -207,59 +206,28 @@ of attributes."
                    (add-adjacency origin dest edge))]
     (add-mindmap hype new-mm)))
 
-(defn apply-filters
-  "Apply multiple filters, returning a list of elements which satisfy them all."
-  ; Could probably be made more efficient by shortcutting with a :while, but that
-  ;   would require inverting the loop order (ie loop over collection outside filters
-  [filter-list coll]
-  (if-not filter-list
-    ; if filter-list is empty, we're done
-    coll
-    ; otherwise apply this filter and recurse on the rest
-    (let [[cur-filter & remaining-filters] filter-list
-          filtered-coll (filter cur-filter coll)]
-      (set (apply-filters remaining-filters filtered-coll)))))
-
 (defn- get-adjacency
   [hype]
   (:adjacency (get-head hype)))
 
-;TODO YOUAREHERE Just got this working properly. Could almost certainly be improved
-; by some reorganization and simplification. "Older version," below, is dead code.
-; Open question: doc says "return all edges" but in fact it returns all edge ids.
-; Do we care? If we express in terms of edges, more interesting filters become natural.
+(defn get-edges
+  "Get some edges from the head of a hypermap by number"
+  [hype edge-nums]
+  (for [edge-num edge-nums]
+    (get (:edges (get-head hype)) edge-num)))
+
 (defn edges-from
   "Return all edges originating at this node, optionally applying a filterchain."
-  ; Simple version with no filter
   ([hype node]
-    (apply 
-      union ; they come out as a list of sets which must be joined
+    (apply union ; they come out as a list of sets which must be joined
       (let [adjacency (get-adjacency hype)]
+        ; for each origin, for each destination, return the related edge
         (for [[origin dest-struct] adjacency :when (= origin (:id node))
               [dest edges] dest-struct]
-          edges))))
+          (get-edges hype edges)
+          )))))
 
-  ; With filter: wrap filtering around simple version
-  ([hype node filter-chain]
-   (apply-filters
-     filter-chain
-     (edges-from hype node))))
-
-; Older version of the above
-(defn edges-from
-  "Return all edges originating at this node, optionally applying a filterchain."
-  ([hype node]
-    (edges-from hype node nil))
-  ([hype node filter-chain]
-    (let [adjacency (:adjacency (get-head hype))]
-      ; Apply any filters (edges are multiple sets, so union them first)
-      (apply-filters
-        filter-chain 
-        (apply union
-          (for [[origin dest-struct] adjacency :when (= origin (:id node))
-                [dest edges] dest-struct]
-              edges))))))
-
+;TODO
 (defn delete-node
   "Delete current node from the head mindmap, returning a modified hypermap.
   New current node is the (first) parent of the deleted node."

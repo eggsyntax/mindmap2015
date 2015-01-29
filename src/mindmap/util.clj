@@ -55,3 +55,18 @@
 
 (no-nils? [1 2 3])
 (no-nils? [1 nil 3])
+
+(defn apply-filters
+  "Apply multiple filters to a collection, returning a list of elements which satisfy them all."
+  ; Could probably be moved even to another module: "transformations" or the like.
+  ; Could probably be made more efficient by shortcutting with a :while, but that
+  ;   would require inverting the loop order (ie loop over collection outside filters.
+  [filter-list coll]
+  (if-not filter-list
+    ; if filter-list is empty, we're done
+    coll
+    ; otherwise apply this filter and recurse on the rest
+    (let [[cur-filter & remaining-filters] filter-list
+          filtered-coll (filter cur-filter coll)]
+      (apply-filters remaining-filters filtered-coll))))
+

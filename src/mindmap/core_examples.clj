@@ -30,8 +30,6 @@
 
 (get-cur-from-hype @hypermap)
 
-(cur-val @hypermap :title)
-
 (demo (:maps @hypermap))
 (demo (assoc-in @hypermap [:maps 1234] {:foo :bar}))
 

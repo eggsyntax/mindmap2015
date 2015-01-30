@@ -73,7 +73,7 @@ efficiency problems.
   [hype]
   (get-mm hype (hype :head-pointer)))
 
-(defn get-entity
+(defn- get-mm-entity
   "Extract an entity of some type by id"
   [mm ent-type id]
   ((ent-type mm) id))
@@ -81,22 +81,12 @@ efficiency problems.
 (defn get-node
 "Extract a node by id"
   [mm id]
-  (get-entity mm :nodes id))
+  (get-mm-entity mm :nodes id))
 
 (defn get-edge
 "Extract an edge by id"
   [mm id]
-  (get-entity mm :edges id))
-
-; (defn get-node
-;   "Extract a node by id"
-;   [mm id]
-;   ((mm :nodes) id))
- 
-(defn get-cur
-  "Get the node which is the current node of a mindmap"
-  [mm]
-  (get-node mm (mm :cur-pointer)))
+  (get-mm-entity mm :edges id))
 
 (defn get-cur-from-hype
   "Get the current node of the current head of the hypermap."
@@ -105,19 +95,13 @@ efficiency problems.
   [hype]
   (get-cur (get-head hype)))
 
-(defn cur-val
-  "Get a value from the current node"
-  [hype attribute]
-  (attribute (get-cur-from-hype hype))
-  )
-
 (defn is-cur?
   "Is this node the current node of this mindmap?"
   [mm anode]
   (= anode (get-cur mm) ))
 
-(defn add-mindmap
-  "Add a new mindmap to this hypermap, and an edge from the previous head to
+(defn- commit-mindmap
+  "Commit a modified mindmap to this hypermap, and an edge from the previous head to
   the new mindmap. Make the new mindmap the head."
   [hype mm]
     ; New hypermap had better include this mindmap!
@@ -159,14 +143,15 @@ efficiency problems.
         (assoc :id (ut/main-indexer)))))
 
 (defn add-node
-  "Add this node to the head mindmap of this hypermap, and set it as the
-  current node. Does not create any edges in the mindmap. Return the modified
-  hypermap."
+  "Adds a node with the given attributes to the head mindmap of this hypermap, 
+  and set it as the current node. Does not create any edges in the mindmap. 
+  Return the modified hypermap."
   ; TODO does adding a node make it cur?
-  [hype node]
+  [hype attributes]
   (let [mm (get-head hype)
+        node (entity attributes)
         new-mm (add-mm-val mm :nodes node)]
-    (add-mindmap hype new-mm)))
+    (commit-mindmap hype new-mm)))
 
 "Let's say for now that adjacency is represented by a map of maps: origin:dest:edge
 Adjacency representation, whatever it is, should be able to be addressed as a nested map from
@@ -203,8 +188,12 @@ of attributes."
                    (add-mm-val :edges edge)
                    ; and with a new entry in the adjacency representation
                    (add-adjacency origin dest edge))]
-    (add-mindmap hype new-mm)))
+    (commit-mindmap hype new-mm)))
 
+(defn add-node-from
+  "Add a new node as the child of a parent node."
+  [hype parent ]
+  )
 (defn get-adjacency
   [hype]
   (:adjacency (get-head hype)))

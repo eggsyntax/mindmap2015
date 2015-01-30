@@ -56,7 +56,7 @@
 ; We can add a second edge between the same pair of nodes (some type of edge that I just made up)
 (demo (swap! hypermap add-edge anode anothernode
              {:title "Edge 3" :type :file-contains}))
-(demo (swap! hypermap add-edge anode cur {:title "Edge 4" :type :whatev}))
+(demo (swap! hypermap add-edge anode cur {:title "Edge 4" :type :child}))
 
 (defn print-head [hype] (ppprint (get-head hype)))
 (print-head @hypermap)
@@ -87,12 +87,12 @@
 (def child-filter #(= (:type (get-node (get-head @hypermap) %)) :child))
 (def test-filter #(= (:type %) :child))
 
+(print-head @hypermap)
 (demo (edges-from @hypermap anode))
 (demo (apply-filters
-        [test-filter]
+        [child-filter]
         (edges-from @hypermap anode))) 
 
-(demo (edges-from @hypermap anode [test-filter]))
-
-(demo (edges-from @hypermap anode ))
+; For a single filter, we could just do "(filter my-filter" instead of "apply-filters [my-filter]"
+(demo (apply-filters [test-filter] (edges-from @hypermap anode)))
 

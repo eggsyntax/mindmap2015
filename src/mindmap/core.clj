@@ -123,8 +123,7 @@ efficiency problems.
     ; New hypermap had better include this mindmap!
     {:post [(contains? (:maps %) (:id mm))]}
 
-    (let [;orig-maps (:maps hype)
-          orig-head-id (:head-pointer hype)
+    (let [orig-head-id (:head-pointer hype)
           new-id (:id mm)
           new-edge-key [orig-head-id new-id]
           new-edge-val {:type :child} ]
@@ -206,7 +205,7 @@ of attributes."
                    (add-adjacency origin dest edge))]
     (add-mindmap hype new-mm)))
 
-(defn- get-adjacency
+(defn get-adjacency
   [hype]
   (:adjacency (get-head hype)))
 
@@ -227,9 +226,12 @@ of attributes."
           (get-edges hype edges)
           )))))
 
-;TODO
+;TODO INCOMPLETE
 (defn delete-node
   "Delete current node from the head mindmap, returning a modified hypermap.
-  New current node is the (first) parent of the deleted node."
-  [hype ]
+  New current node is the (first) parent of the deleted node. All edges to
+  and from this node are also deleted."
+  [hype]
+  (let [cur (get-cur-from-hype hype)
+        ])
   )

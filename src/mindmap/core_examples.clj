@@ -1,10 +1,12 @@
 (ns mindmap.core-examples
-  (:use [mindmap.core]
+  (:use [mindmap.mm-pub]
         [mindmap.util])
   (:require [mindmap.mm :as mm]))
 
 ; Make it easy to reload namespaces
 ;(require 'mindmap.core-examples :reload-all)
+(use '[clojure.tools.namespace.repl :only (refresh)])
+(refresh)
 
 ; Just gives some examples of how the core functions work.
 ; Warning! Anything in here with hardcoded numbers won't succeed across
@@ -26,14 +28,14 @@
 (demo (:maps @hypermap))
 (demo (assoc-in @hypermap [:maps 1234] {:foo :bar}))
 
-(demo (def anode (entity {:title "Second node"})))
+(demo (def anode (mm/entity {:title "Second node"})))
 (demo (swap! hypermap add-node anode))
 
 ; Update our test mindmap:
 (demo (swap! hypermap add-node anode))
 (demo @hypermap)
 
-(def anothernode (entity {:title "Third node"}))
+(def anothernode (mm/entity {:title "Third node"}))
 (demo anothernode)
 
 (demo (swap! hypermap add-node anothernode))

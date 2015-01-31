@@ -81,12 +81,16 @@ efficiency problems.
   "Adds a node with the given attributes to the head mindmap of this hypermap, 
   and set it as the current node. Does not create any edges in the mindmap. 
   Return the modified hypermap."
-  ; TODO does adding a node make it cur?
+  ; Does adding a node make it cur? I think so, and am writing it as such,
+  ; but we could certainly drop that.
   [hype attributes]
   (let [mm (get-head hype)
         node (mm/entity attributes)
         ; ? Is this doing the right thing ?
-        new-mm (mm/update mm :nodes node)]
+        new-mm
+          (-> mm
+              (mm/update :nodes node)
+              (assoc :cur-pointer node))]
     (commit-mindmap hype new-mm)))
 
 (defn add-new-node

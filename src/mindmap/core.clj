@@ -89,6 +89,13 @@ efficiency problems.
         new-mm (mm/update mm :nodes node)]
     (commit-mindmap hype new-mm)))
 
+(defn add-new-node
+  "Adds a node with the given attributes to the head mindmap of this hypermap, 
+  and set it as the current node. Does not create any edges in the mindmap. 
+  Return the modified hypermap."
+  [hype attributes]
+  (add-node (new-entity attributes)))
+
 (defn add-edge
   "Add an edge to the head mindmap of this hypermap. Return the modified hypermap.
   Parameters:

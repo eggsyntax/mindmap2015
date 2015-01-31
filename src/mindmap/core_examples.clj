@@ -1,6 +1,10 @@
 (ns mindmap.core-examples
   (:use [mindmap.core]
-        [mindmap.util]))
+        [mindmap.util])
+  (:require [mindmap.mm :as mm]))
+
+; Make it easy to reload namespaces
+;(require 'mindmap.core-examples :reload-all)
 
 ; Just gives some examples of how the core functions work.
 ; Warning! Anything in here with hardcoded numbers won't succeed across
@@ -22,7 +26,8 @@
 (demo (:maps @hypermap))
 (demo (assoc-in @hypermap [:maps 1234] {:foo :bar}))
 
-(demo (swap! hypermap add-node {:title "Second node"}))
+(demo (def anode (entity {:title "Second node"})))
+(demo (swap! hypermap add-node anode))
 
 ; Update our test mindmap:
 (demo (swap! hypermap add-node anode))
@@ -51,7 +56,7 @@
 
 (get-head @hypermap) 
 ((:nodes (get-head @hypermap)) 101)
-(get-node (get-head @hypermap) 101)
+(mm/get-node (get-head @hypermap) 101)
 
 ; apply-filters example
 (def f-list [even?
@@ -68,8 +73,8 @@
 (def edges (:edges (get-head @hypermap)))
 (println edges)
 
-(get-node (get-head @hypermap) (:id anode))
-(def child-filter #(= (:type (get-node (get-head @hypermap) %)) :child))
+(mm/get-node (get-head @hypermap) (:id anode))
+(def child-filter #(= (:type (mm/get-node (get-head @hypermap) %)) :child))
 (def test-filter #(= (:type %) :child))
 
 (print-head @hypermap)

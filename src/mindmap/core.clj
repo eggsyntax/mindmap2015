@@ -1,5 +1,6 @@
 (ns mindmap.core
   (:require [mindmap.util :as ut]
+            [mindmap.mm :as mm]
             [clojure.set :refer [union]])
   (:gen-class))
 
@@ -34,29 +35,6 @@ efficiency problems.
   [& args]
   (println "Hello, World!"))
 
-(defn entity
-  "Create a new system entity (which is just a map), passing in any properties
-  you want it to have.  It will be given a unique id automatically. Any other
-  properties you want it to have should be passed in as a map.
-  eg (def mynode (entity))
-  or (def mynode (entity {:title \"foo\"}).  "
-  [properties]
-  (let [base-props {:id (ut/main-indexer)}]
-  (merge base-props properties)))
-
-(defn default-node []
-  (entity {:title "New mindmap"}))
-
-(defn default-mindmap
-  "Default mindmap contains one node, no edges."
-  []
-  (let [first-node (default-node)
-        first-id (:id first-node)]
-    {:id (ut/main-indexer)
-     :nodes {first-id first-node} 
-     :edges {}
-     :cur-pointer first-id}))
-
 ; There's redundancy in get-mm/get-node, and in get-head/get-cur,
 ; which could be factored out, but I'm deliberately
 ; leaving them separate because a) we need to be careful to keep them
@@ -73,33 +51,12 @@ efficiency problems.
   [hype]
   (get-mm hype (hype :head-pointer)))
 
-(defn- get-mm-entity
-  "Extract an entity of some type by id"
-  [mm ent-type id]
-  ((ent-type mm) id))
-
-(defn get-node
-"Extract a node by id"
-  [mm id]
-  (get-mm-entity mm :nodes id))
-
-(defn get-edge
-"Extract an edge by id"
-  [mm id]
-  (get-mm-entity mm :edges id))
-
-(defn get-cur-from-hype
-  "Get the current node of the current head of the hypermap."
-  ; Could be expressed as polymorphism on get-cur, but again
-  ; I'm trying to make every effort to keep the levels distinct.
+(defn get-cur
+  "Return the current node of the current head of the hypermap."
   [hype]
-  (get-cur (get-head hype)))
-
-(defn is-cur?
-  "Is this node the current node of this mindmap?"
-  [mm anode]
-  (= anode (get-cur mm) ))
-
+  (let [head (get-head hype)] 
+    (mm/get-node head (:cur-pointer head)))
+  )
 (defn- commit-mindmap
   "Commit a modified mindmap to this hypermap, and an edge from the previous head to
   the new mindmap. Make the new mindmap the head."
@@ -118,29 +75,7 @@ efficiency problems.
         ; Add edge
         (assoc-in [:map-edges new-edge-key] new-edge-val)
         ; Set head pointer
-        (assoc :head-pointer new-id)))
-      
-  )
-
-(defn- add-mm-val
-  "Update some property of a mindmap (nodes or edges) by adding a new value,
-  returning an updated mindmap with a new id. "
-  [mm property val-to-add]
-  (let [id (:id val-to-add)
-        _ (println "Adding " property val-to-add) ]
-    ; nil args are probably a bad idea here -- although maybe it's fine 
-    ; to be starting from a nil mindmap. 
-    (assert (ut/no-nils? [mm property val-to-add]))
-    ; Nodes and edges have a numeric :id, so the added value better have one
-    (assert (number? (:id val-to-add)))
-    ; And the mindmap ought to have this property
-    (assert (property mm))
-
-    (-> mm
-        ; add the new value in the appropriate place
-        (assoc-in [property id] val-to-add)
-        ; and give the modified mm a new id
-        (assoc :id (ut/main-indexer)))))
+        (assoc :head-pointer new-id))))
 
 (defn add-node
   "Adds a node with the given attributes to the head mindmap of this hypermap, 
@@ -149,27 +84,10 @@ efficiency problems.
   ; TODO does adding a node make it cur?
   [hype attributes]
   (let [mm (get-head hype)
-        node (entity attributes)
-        new-mm (add-mm-val mm :nodes node)]
+        node (mm/entity attributes)
+        ; ? Is this doing the right thing ?
+        new-mm (mm/update mm :nodes node)]
     (commit-mindmap hype new-mm)))
-
-"Let's say for now that adjacency is represented by a map of maps: origin:dest:edge
-Adjacency representation, whatever it is, should be able to be addressed as a nested map from
-origin to destination to a set of edge entities (a set because we might conceivably want to
-represent more than one edge between a given pair of nodes).
-Graph search & filtering functions can use either all edges, or only edges with some subset
-of attributes."
-
-(defn- add-adjacency
-  "Add an adjacency relationship to a mindmap, connecting two nodes through an edge.
-  Return modified mindmap."
-  [mm origin dest edge]
-  ; set-conj is just conj, but ensures return value is a set.
-  ; Handles the case where the incoming set is nil.
-  (letfn [(set-conj [the-set item] (set (conj the-set item)))]
-    (update-in mm
-      [:adjacency (:id origin) (:id dest)]
-      set-conj (:id edge))))
 
 (defn add-edge
   "Add an edge to the head mindmap of this hypermap. Return the modified hypermap.
@@ -181,22 +99,13 @@ of attributes."
   ; Consider interning edges for performance. http://nyeggen.com/post/2012-04-09-clojure/
   [hype origin dest attributes]
   (let [mm (get-head hype)
-        ; create the new edge
-        edge (entity attributes)
-        new-mm (-> mm
-                   ; create a new mindmap based on the old, but with the new edge added
-                   (add-mm-val :edges edge)
-                   ; and with a new entry in the adjacency representation
-                   (add-adjacency origin dest edge))]
+        new-mm (mm/add-edge mm origin dest attributes)]
     (commit-mindmap hype new-mm)))
 
 (defn add-node-from
   "Add a new node as the child of a parent node."
-  [hype parent ]
-  )
-(defn get-adjacency
-  [hype]
-  (:adjacency (get-head hype)))
+  [hype parent node-attrs edge-attrs]
+  ())
 
 (defn get-edges
   "Get some edges from the head of a hypermap by number"
@@ -205,22 +114,22 @@ of attributes."
     (get (:edges (get-head hype)) edge-num)))
 
 (defn edges-from
-  "Return all edges originating at this node, optionally applying a filterchain."
+  "Return all edges originating at this node"
   ([hype node]
     (apply union ; they come out as a list of sets which must be joined
-      (let [adjacency (get-adjacency hype)]
+      (let [adjacency (:adjacency hype)]
         ; for each origin, for each destination, return the related edge
         (for [[origin dest-struct] adjacency :when (= origin (:id node))
               [dest edges] dest-struct]
           (get-edges hype edges)
           )))))
 
-;TODO INCOMPLETE
-(defn delete-node
-  "Delete current node from the head mindmap, returning a modified hypermap.
-  New current node is the (first) parent of the deleted node. All edges to
-  and from this node are also deleted."
-  [hype]
-  (let [cur (get-cur-from-hype hype)
-        ])
-  )
+; Create a hypermap for testing
+(defn default-hypermap
+  []
+  (let [first-mindmap (mm/default-mindmap)
+        first-id (:id first-mindmap)]
+    {:id (ut/main-indexer)
+     :maps {first-id first-mindmap}
+     :map-edges {}
+     :head-pointer first-id}))

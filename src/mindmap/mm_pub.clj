@@ -12,6 +12,17 @@
 
 "
 
+ alter and dysync
+
+
+Adding Validation to Refs
+Database transactions maintain consistency through various integrity
+checks. You can do something similar with Clojure’s transactional
+memory, by specifying a validation function when you create a ref:
+(ref initial-state options*)
+; options include:
+; :validator validate-fn
+
 TODO
 
 Timestamps (which only hypermap nodes have)
@@ -51,9 +62,10 @@ efficiency problems.
 (defn get-cur
   "Return the current node of the current head of the hypermap."
   [hype]
-  (let [head (get-head hype)] 
+  (let [head (get-head hype)]
     (mm/get-node head (:cur-pointer head)))
   )
+
 (defn- commit-mindmap
   "Commit a modified mindmap to this hypermap, and an edge from the previous head to
   the new mindmap. Make the new mindmap the head."
@@ -75,27 +87,20 @@ efficiency problems.
         (assoc :head-pointer new-id))))
 
 (defn add-node
-  "Adds a node with the given attributes to the head mindmap of this hypermap, 
-  and set it as the current node. Does not create any edges in the mindmap. 
+  "Adds a node with the given attributes to the head mindmap of this hypermap,
+  and set it as the current node. Does not create any edges in the mindmap.
   Return the modified hypermap."
   ; Does adding a node make it cur? I think so, and am writing it as such,
   ; but we could certainly drop that.
   [hype attributes]
   (let [mm (get-head hype)
         node (mm/entity attributes)
-        ; ? Is this doing the right thing ?
         new-mm
           (-> mm
               (mm/update :nodes node)
-              (assoc :cur-pointer node))]
+              ; bug here. add ID
+              (assoc :cur-pointer (:id node)))]
     (commit-mindmap hype new-mm)))
-
-(defn add-new-node
-  "Adds a node with the given attributes to the head mindmap of this hypermap, 
-  and set it as the current node. Does not create any edges in the mindmap. 
-  Return the modified hypermap."
-  [hype attributes]
-  (add-node (mm/entity attributes)))
 
 (defn add-edge
   "Add an edge to the head mindmap of this hypermap. Return the modified hypermap.
@@ -110,17 +115,28 @@ efficiency problems.
         new-mm (mm/add-edge mm origin dest attributes)]
     (commit-mindmap hype new-mm)))
 
-(defn add-node-from
-  "Add a new node as the child of a parent node."
-  [hype parent node-attrs edge-attrs]
-  ())
+(defn add-new-node-from
+  "Add a new node as the child of the parent node making the child the current node."
+  [hype parent child-attrs edge-attrs]
+  (let [mm (get-head hype)
+        child (mm/entity child-attrs)
+        new-mm
+          (-> mm
+              (mm/update :nodes child)
+              (mm/add-edge mm parent child edge-attrs)
+              (assoc :cur-pointer child))]
+    (commit-mindmap hype new-mm)))
 
+; Does this makes sense to generally expose ?
 (defn get-edges
   "Get some edges from the head of a hypermap by number"
   [hype edge-nums]
   (for [edge-num edge-nums]
     (get (:edges (get-head hype)) edge-num)))
 
+; The mm interface should hide that connectivity info about edges
+; that are held in the adjacency keyword.
+;
 (defn edges-from
   "Return all edges originating at this node"
   ([hype node]

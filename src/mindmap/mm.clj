@@ -1,4 +1,4 @@
-(ns mindmap.mm
+ (ns mindmap.mm
   (:require [mindmap.util :as ut]))
 
 (defn entity
@@ -20,7 +20,7 @@
   (let [first-node (default-node)
         first-id (:id first-node)]
     {:id (ut/main-indexer)
-     :nodes {first-id first-node} 
+     :nodes {first-id first-node}
      :edges {}
      :cur-pointer first-id}))
 
@@ -45,8 +45,8 @@
   [mm entity-type entity]
   (let [id (:id entity)
         _ (println "Adding " entity-type entity) ]
-    ; nil args are probably a bad idea here -- although maybe it's fine 
-    ; to be starting from a nil mindmap. 
+    ; nil args are probably a bad idea here -- although maybe it's fine
+    ; to be starting from a nil mindmap.
     (assert (ut/no-nils? [mm entity-type entity]))
     ; Nodes and edges have a numeric :id, so the added value better have one
     (assert (number? (:id entity)))
@@ -82,7 +82,7 @@ of attributes."
   passin in any properties you want it to have."
   [mm origin dest attributes]
   (let [edge-ent (entity attributes)]
-    (-> mm 
+    (-> mm
         (update :edges edge-ent)
         (add-adjacency origin dest edge-ent))))
 

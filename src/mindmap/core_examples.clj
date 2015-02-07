@@ -56,7 +56,7 @@
 
 (get-edges @hypermap [67 69])
 
-(get-head @hypermap) 
+(get-head @hypermap)
 ((:nodes (get-head @hypermap)) 101)
 (mm/get-node (get-head @hypermap) 101)
 
@@ -83,7 +83,7 @@
 (demo (edges-from @hypermap anode))
 (demo (apply-filters
         [child-filter]
-        (edges-from @hypermap anode))) 
+        (edges-from @hypermap anode)))
 
 ; For a single filter, we could just do "(filter my-filter" instead of "apply-filters [my-filter]"
 (demo (apply-filters [test-filter] (edges-from @hypermap anode)))

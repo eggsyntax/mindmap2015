@@ -14,7 +14,6 @@
 
  alter and dysync
 
-
 Adding Validation to Refs
 Database transactions maintain consistency through various integrity
 checks. You can do something similar with Clojure’s transactional
@@ -98,7 +97,6 @@ efficiency problems.
         new-mm
           (-> mm
               (mm/update :nodes node)
-              ; bug here. add ID
               (assoc :cur-pointer (:id node)))]
     (commit-mindmap hype new-mm)))
 
@@ -123,11 +121,13 @@ efficiency problems.
         new-mm
           (-> mm
               (mm/update :nodes child)
-              (mm/add-edge mm parent child edge-attrs)
-              (assoc :cur-pointer child))]
+              (mm/add-edge parent child edge-attrs)
+              (assoc :cur-pointer (:id child)))]
     (commit-mindmap hype new-mm)))
 
 ; Does this makes sense to generally expose ?
+; These should be a seq of edge entities instead of
+; id's ?
 (defn get-edges
   "Get some edges from the head of a hypermap by number"
   [hype edge-nums]

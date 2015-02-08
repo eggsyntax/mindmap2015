@@ -56,11 +56,11 @@ efficiency problems.
 (defn edges-from
   "Return all edges originating at this node"
   ([mm node]
-    (apply union                                            ; they come out as a list of sets which must be joined
+    ; they come out as a list of sets which must be joined
+    (apply union
            (let [adjacency (:adjacency mm)]
-             ; for each origin, for each destination, return the related edge
              ;
-             ;  {origin-id {dest-id #{edge-ids}}
+             ; An adjacency relation: {origin-id {dest-id #{edge-ids}}
              ;
              (for [[origin-id dest-struct] adjacency :when (= origin-id (:id node))
                    [dest-id edges-ids] dest-struct]
@@ -70,11 +70,11 @@ efficiency problems.
 (defn edges-to
   "Return all edges terminating at this node"
   ([mm node]
-    (apply union                                            ; they come out as a list of sets which must be joined
+    ; they come out as a list of sets which must be joined
+    (apply union
            (let [adjacency (:adjacency mm)]
-             ; for each origin, for each destination, return the related edge
              ;
-             ;  {origin-id {dest-id #{edge-ids}}
+             ; An adjacency relation: {origin-id {dest-id #{edge-ids}}
              ;
              (for [[origin-id dest-struct] adjacency
                    [dest-id edges-ids] dest-struct
@@ -149,7 +149,6 @@ of attributes."
   ;
   ; If this struct's set of edge-id's contains only this edge's id
   ; then the entire struct should be removed from the adjacency map, otherwise
-  ; just remove this edge id.
   ;
   ())
 

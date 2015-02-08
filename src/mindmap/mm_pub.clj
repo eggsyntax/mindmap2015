@@ -1,35 +1,13 @@
 (ns mindmap.mm-pub
   (:require [mindmap.util :as ut]
-            [mindmap.mm :as mm]
-            [clojure.set :refer [union]])
+            [mindmap.mm :as mm])
   (:gen-class))
 
-; Public API for mindmap
-
-; See core-examples for usage
-; TODO consider adding Prismatic's schema for idiomatic data description
-; https://github.com/Prismatic/schema
-
 "
-Adding Validation to Refs
-Database transactions maintain consistency through various integrity
-checks. You can do something similar with Clojure’s transactional
-memory, by specifying a validation function when you create a ref:
-(ref initial-state options*)
-; options include:
-; :validator validate-fn
-
 TODO
-
-Timestamps (which only hypermap nodes have)
-separate out per-context functionality
-
-
-Node ID remains constant when node changes (eg new title)
-    - double-check existing code
-
-
-Nodes and edges don't know anything about each other. An edge doesn't know what nodes it connects. Only the mindmap knows.
+ o Timestamps (which only hypermap nodes have)
+ o Validation (Prismatic Schema, validators?)
+ o unit tests
 "
 
 (defn get-mm
@@ -103,7 +81,7 @@ Nodes and edges don't know anything about each other. An edge doesn't know what 
     (commit-mindmap hyper new-mm)))
 
 (defn remove-node
-  "Removes this node and any edges the terminate at this node from the head of the hyperrmap.
+  "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
   Returns the modified hypermap."
   ; Question: if we remove the current head node what happens ?
   [hyper node]
@@ -122,15 +100,14 @@ Nodes and edges don't know anything about each other. An edge doesn't know what 
   ; Consider interning edges for performance. http://nyeggen.com/post/2012-04-09-clojure/
   [hyper origin dest attributes]
   (let [mm (get-head hyper)
-        new-mm (mm/add-edge mm origin dest attributes)]
+        new-mm  (mm/add-edge mm origin dest attributes)]
     (commit-mindmap hyper new-mm)))
 
 (defn remove-edge
   "Removes an edge from the head of the hypermap. Return the modified hypermap."
   [hyper edge]
   (let [mm (get-head hyper)
-        new-mm
-        (mm/remove-edge mm edge)]
+        new-mm (mm/remove-edge mm edge)]
     (commit-mindmap hyper new-mm)))
 
 (defn edges-from

@@ -138,6 +138,11 @@ Nodes and edges don't know anything about each other. An edge doesn't know what 
   [hyper node]
   (mm/edges-from (get-head hyper) node))
 
+(defn edges-to
+  "Returns a coll of edges originating from this node."
+  [hyper node]
+  (mm/edges-to (get-head hyper) node))
+
 ; Create a hypermap for testing
 (defn default-hypermap
   []

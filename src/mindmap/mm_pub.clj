@@ -91,7 +91,7 @@ TODO
     (commit-mindmap hyper new-mm)))
 
 (defn add-edge
-  "Add an edge to the head mindmap of this hypermap. Return the modified hypermap.
+  "Add an edge to tee head mindmap of this hypermap. Return the modified hypermap.
   Parameters:
     Hypermap
     Origin node

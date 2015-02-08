@@ -80,7 +80,10 @@ efficiency problems.
                    [dest-id edges-ids] dest-struct :when (= dest-id (:id node))
                    ]
                (get-edges mm edges-ids)
-               )))))
+               )))
+
+    )
+  )
 
 (defn update
   "Update some entity type of a mindmap (nodes or edges) by adding a new value,
@@ -150,12 +153,35 @@ of attributes."
   ;
   ; If this struct's set of edge-id's contains only this edge's id
   ; then the entire struct should be removed from the adjacency map, otherwise
+  ; just pull the edge-id from the set.
   ;
-  (for [[origin-id dest-data] (:adjacency mm)
-        [dest-id edge-ids] (dest-data)
-        :when (ut/seq-contains? edge-ids (:id edge))]
-    (println origin-id edge-ids)
-    ))
+      ; they come out as a list of sets which must be joined
+ (apply union
+        (let [adjacency (:adjacency mm)
+              edge-id (:id edge)
+              ]
+          (for [[origin-id dest-struct] adjacency
+                [dest-id edge-ids] dest-struct
+                :when (ut/seq-contains? edge-ids edge-id)
+                ]
+           (
+             (if (= (count edge-ids) 1)
+               ; There has to be an update-in on the mindmap
+               ; that removes the entire adjacency cell
+               ; that contains this edge-id
+               ;
+               (println "Relationship has one Id: " edge-ids)
+
+               ; There has to be an update-in on the mindmap
+               ; that only removes the edge-id from
+               ; the cell that contains the edge-id
+               (println "Relationship has multiple Ids: " edge-ids)
+               )
+             )
+           )
+          ))
+ )
+
 
 (defn remove-edge
   "Removes the edge and any adjacency information from the mindmap incrementing

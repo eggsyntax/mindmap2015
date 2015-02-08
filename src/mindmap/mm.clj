@@ -77,8 +77,7 @@ efficiency problems.
              ; An adjacency relation: {origin-id {dest-id #{edge-ids}}
              ;
              (for [[origin-id dest-struct] adjacency
-                   [dest-id edges-ids] dest-struct
-                   :when (= dest-id (:id node))
+                   [dest-id edges-ids] dest-struct :when (= dest-id (:id node))
                    ]
                (get-edges mm edges-ids)
                )))))
@@ -88,7 +87,9 @@ efficiency problems.
   returning an updated mindmap with a new id. "
   [mm entity-type entity]
   (let [id (:id entity)
-        _ (println "Adding " entity-type entity)]
+        ;        _ (println "mm/update> Map: " mm)
+        ;        _ (println "mm/update> Adding " entity-type entity)
+        ]
     ; nil args are probably a bad idea here -- although maybe it's fine
     ; to be starting from a nil mindmap.
     (assert (ut/no-nils? [mm entity-type entity]))
@@ -150,7 +151,11 @@ of attributes."
   ; If this struct's set of edge-id's contains only this edge's id
   ; then the entire struct should be removed from the adjacency map, otherwise
   ;
-  ())
+  (for [[origin-id dest-data] (:adjacency mm)
+        [dest-id edge-ids] (dest-data)
+        :when (ut/seq-contains? edge-ids (:id edge))]
+    (println origin-id edge-ids)
+    ))
 
 (defn remove-edge
   "Removes the edge and any adjacency information from the mindmap incrementing

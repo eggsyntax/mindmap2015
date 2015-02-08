@@ -56,6 +56,11 @@
 (no-nils? [1 2 3])
 (no-nils? [1 nil 3])
 
+(defn seq-contains?
+  "Tests if the target is in a Seq"
+  [coll target]
+  (some #(= target %) coll))
+
 (defn apply-filters
   "Apply multiple filters to a collection, returning a list of elements which satisfy them all."
   ; Could probably be moved even to another module: "transformations" or the like.

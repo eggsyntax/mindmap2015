@@ -8,6 +8,9 @@ pom.xml.asc
 *.pyc
 /.lein-*
 /.nrepl-port
-/.idea
 /src/py-env
+
+# IntelliJ stuff
+/.idea
+/mindmap.iml
 

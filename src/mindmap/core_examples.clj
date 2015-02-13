@@ -41,7 +41,7 @@
 (demo (swap! hypermap add-node anothernode))
 (demo @hypermap)
 
-(def cur (get-cur @hypermap))
+(def firstnode (get-cur @hypermap))
 (demo (swap! hypermap add-edge cur anode {:title "Edge 1" :type :child}))
 (demo (swap! hypermap add-edge anode anothernode {:title "Edge 2" :type :child}))
 
@@ -54,7 +54,7 @@
 (print-head @hypermap)
 (get-cur @hypermap)
 
-(get-edges @hypermap [67 69])
+(mm/get-edges @hypermap [67 69])
 
 (get-head @hypermap)
 ((:nodes (get-head @hypermap)) 101)

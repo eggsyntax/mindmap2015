@@ -2,7 +2,6 @@
   (:require [clojure.test :refer :all]
             ))
 
-
 (deftest basic-math
   (is (= 4 4)))
 

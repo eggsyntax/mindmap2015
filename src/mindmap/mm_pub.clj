@@ -61,10 +61,10 @@ TODO
   Return the modified hypermap."
   [hyper attributes]
   (let [mm (get-head hyper)
-        node (mm/entity attributes)
+        node (mm/create-entity attributes)
         new-mm
           (-> mm
-              (mm/update :nodes node)
+              (mm/update-entity :nodes node)
               (assoc :cur-pointer (:id node)))]
     (commit-mindmap hyper new-mm)))
 
@@ -72,10 +72,10 @@ TODO
   "Add a new node as the child of the parent node making the child the current node."
   [hyper parent child-attrs edge-attrs]
   (let [mm (get-head hyper)
-        child (mm/entity child-attrs)
+        child (mm/create-entity child-attrs)
         new-mm
         (-> mm
-            (mm/update :nodes child)
+            (mm/update-entity :nodes child)
             (mm/add-edge parent child edge-attrs)
             (assoc :cur-pointer (:id child)))]
     (commit-mindmap hyper new-mm)))
@@ -129,3 +129,5 @@ TODO
      :maps {first-id first-mindmap}
      :map-edges {}
      :head-pointer first-id}))
+
+(defn print-head [hype] (ut/ppprint (get-head hype)))

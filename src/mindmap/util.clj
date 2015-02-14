@@ -1,5 +1,6 @@
 (ns mindmap.util
   (:use [clojure.pprint :only (pprint)])
+  (:use [clojure.tools.namespace.repl :only  (refresh)])
   (:import [java.io StringWriter]))
 
 (defn get-indexer
@@ -34,6 +35,8 @@
 
 (defn ppprint [thing]
   (println (to-str thing)))
+
+
 
 (defn spaces [n]
   "Get some spaces for padding a string"

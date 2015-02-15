@@ -63,13 +63,15 @@
           edges ()] 
        (apply #(conj edges (get-edge mm (:edge-id %))) child-rels) 
       ))
-   
-(defn edges-to
-  "Return all edges terminating at this node"
-  ;
-  [mm node]
-  (pr "mm/edges-to")
-  )
+
+ (defn edges-to
+  "Returns a seq of all edges terminating at this node"
+    [mm node]
+    (let [ ; a seq of Relationships whose origin is the node
+          child-rels (filter #(= (:dest-id %) (:id node)) (:adjacency mm))
+          edges ()] 
+       (apply #(conj edges (get-edge mm (:edge-id %))) child-rels) 
+      ))
 
 (defn children-nodes
   "Return all children Entities of this node"

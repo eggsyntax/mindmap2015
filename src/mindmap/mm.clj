@@ -58,8 +58,7 @@
  (defn edges-from
   "Returns a seq of all edges originating from this node"
     [mm node]
-    (let [ ; a seq of Relationships whose origin is the node
-          child-rels (filter #(= (:origin-id %) (:id node)) (:adjacency mm))
+    (let [child-rels (filter #(= (:origin-id %) (:id node)) (:adjacency mm))
           edges ()] 
        (apply #(conj edges (get-edge mm (:edge-id %))) child-rels) 
       ))
@@ -67,23 +66,26 @@
  (defn edges-to
   "Returns a seq of all edges terminating at this node"
     [mm node]
-    (let [ ; a seq of Relationships whose origin is the node
-          child-rels (filter #(= (:dest-id %) (:id node)) (:adjacency mm))
+    (let [par-rels (filter #(= (:dest-id %) (:id node)) (:adjacency mm))
           edges ()] 
-       (apply #(conj edges (get-edge mm (:edge-id %))) child-rels) 
+       (apply #(conj edges (get-edge mm (:edge-id %))) par-rels) 
       ))
 
 (defn children-nodes
-  "Return all children Entities of this node"
+  "Returns a seq of all children node Entities of this node"
   [mm node]
-  (pr "mm/children-nodes")
-  )
+  (let [child-rels (filter #(= (:origin-id %) (:id node)) (:adjacency mm))
+          nodes ()] 
+       (apply #(conj nodes (get-node mm (:dest-id %))) child-rels) 
+    ))
 
-(defn parent-nodes 
-  "Return all parent Entities of this node"
+(defn parent-nodes
+  "Returns a seq of all parent node Entities of this node"
   [mm node]
-  (pr "mm/parent-nodes")
-  )
+  (let [par-rels (filter #(= (:dest-id %) (:id node)) (:adjacency mm))
+          nodes ()] 
+       (apply #(conj nodes (get-node mm (:origin-id %))) par-rels) 
+    ))
 
 (defn set-cur
   "Get the current node Entity of the mindmap"

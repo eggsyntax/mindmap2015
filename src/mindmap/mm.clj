@@ -39,6 +39,11 @@
   [mm id]
   (get-entity mm :nodes id))
 
+(defn get-cur
+  "Return the current node of the Mindmap"
+  [mm]
+  (:cur-pointer mm))
+
 (defn get-edge
   "Extract and edge Entity by id"
   [mm id]
@@ -55,11 +60,30 @@
     [mm node]
     ; filter out all Entities where this node is the origin
     (pr "mm/edges-from"))
-
+   
 (defn edges-to
   "Return all edges terminating at this node"
+  ;
   [mm node]
-  (pr "mm/edges-to"))
+  (pr "mm/edges-to")
+  )
+
+(defn children-nodes
+  "Return all children Entities of this node"
+  [mm node]
+  (pr "mm/children-nodes")
+  )
+
+(defn parent-nodes 
+  "Return all parent Entities of this node"
+  [mm node]
+  (pr "mm/parent-nodes")
+  )
+
+(defn set-cur
+  "Get the current node Entity of the mindmap"
+  [mm node]
+  (assoc mm :cur-pointer (:id node)))
 
 (defn update-entity
   "Update some entity type of a mindmap (nodes or edges) by adding a new value,
@@ -79,7 +103,16 @@
         ; and give the modified mm a new id
         (assoc :id (ut/main-indexer)))))
 
-; (defrecord Relationship [origin-id dest-id edge-id])
+(defn add-node
+  "Adds a node with the given attributes to the head mindmap of this hypermap,
+  and set it as the current node. Does not create any edges in the mindmap.
+  Return the modified hypermap."
+  [mm attributes]
+  (let [node (create-entity attributes)]
+    (-> mm
+      (update-entity :nodes node)
+      (assoc :cur-pointer (:id node)))))
+
 (defn add-relationship
   "Add a relationship to a mindmap between two nodes.
   Its unidirectional connecting two nodes through an edge.
@@ -98,12 +131,33 @@
         (update-entity :edges edge-ent)
         (add-relationship origin dest edge-ent))))
 
+(defn add-new-node-from
+  "Add a new node as the child of the parent node making the child the current node."
+  [mm parent child-attrs edge-attrs]
+  (let [child (create-entity child-attrs)]
+    (-> mm
+      (update-entity :nodes child)
+      (add-edge parent child edge-attrs)
+      (assoc :cur-pointer (:id child)))))
+
+(defn remove-edge-no-inc
+  "Removes the edge and any adjacency information from the mindmap
+  Returns new mingmap with updated id."
+  [mm edge]
+  (let [new-adj-set (set (remove #(= (:id edge) (:edge-id %)) (:adjacency mm)))
+        new-edges (into {} (remove #(= (:id edge) (:id %)) (:edges mm)))]
+    (->
+      (assoc :adjacency new-adj-set)
+      (assoc :edges new-edges))))
+
 (defn remove-edge
   "Removes the edge and any adjacency information from the mindmap incrementing
   the id of the map. Returns new mingmap with updated id."
   [mm edge]
   (-> mm
-    (assoc :id (ut/main-indexer))))
+      (remove-edge-no-inc mm edge)
+      (assoc :id (ut/main-indexer))))
+
 
 ; Need to make this recursive on node children
 (defn remove-node

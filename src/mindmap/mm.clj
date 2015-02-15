@@ -42,7 +42,7 @@
 (defn get-cur
   "Return the current node of the Mindmap"
   [mm]
-  (:cur-pointer mm))
+  (get-node mm (:cur-pointer mm)))
 
 (defn get-edge
   "Extract and edge Entity by id"
@@ -145,19 +145,19 @@
   Returns new mingmap with updated id."
   [mm edge]
   (let [new-adj-set (set (remove #(= (:id edge) (:edge-id %)) (:adjacency mm)))
-        new-edges (into {} (remove #(= (:id edge) (:id %)) (:edges mm)))]
-    (->
+        new-edges (into {} (remove #(= (:id edge) (key %)) (:edges mm)))]
+    (-> mm
       (assoc :adjacency new-adj-set)
-      (assoc :edges new-edges))))
+      (assoc :edges new-edges)
+      )))
 
 (defn remove-edge
   "Removes the edge and any adjacency information from the mindmap incrementing
   the id of the map. Returns new mingmap with updated id."
   [mm edge]
   (-> mm
-      (remove-edge-no-inc mm edge)
+      (remove-edge-no-inc edge)
       (assoc :id (ut/main-indexer))))
-
 
 ; Need to make this recursive on node children
 (defn remove-node

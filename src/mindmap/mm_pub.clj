@@ -3,11 +3,12 @@
             [mindmap.mm :as mm])
   (:gen-class))
 
+;TODO
 "
-TODO
  o Timestamps (which only hypermap nodes have)
  o Validation (Prismatic Schema, validators?)
  o unit tests
+ o test for idempotency on (at least) most of these
 "
 
 (defn get-mm

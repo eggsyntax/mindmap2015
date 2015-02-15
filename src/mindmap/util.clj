@@ -35,7 +35,7 @@
 (defn ppprint [thing]
   (println (to-str thing)))
 
-(defn print-head [hype] (ppprint (hype :maps (hype :head-pointer))))
+(defn print-head [hype] (ppprint ((hype :maps) (hype :head-pointer))))
 
 (defn spaces [n]
   "Get some spaces for padding a string"

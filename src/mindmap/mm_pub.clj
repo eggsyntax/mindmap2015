@@ -121,12 +121,22 @@
   [hyper node]
   (mm/edges-to (get-head hyper) node))
 
+(defn empty-hypermap
+  []
+  (ut/with-id {:timestamp (ut/timestamp)}))
+
 ; Create a hypermap for testing
 (defn default-hypermap
   []
   (let [first-mindmap (mm/default-mindmap)
-        first-id (:id first-mindmap)]
-    {:id (ut/main-indexer)
-     :maps {first-id first-mindmap}
-     :map-edges {}
-     :head-pointer first-id}))
+        _ (println "first-mindmap: " first-mindmap)
+        first-id (:id first-mindmap)
+        empty-hype (empty-hypermap)]
+    (println "empty-hype: " empty-hype)
+    (assoc empty-hype
+           :maps {first-id first-mindmap} 
+           :map-edges {} 
+           :head-pointer first-id)))
+
+(mm/default-mindmap)
+(default-hypermap)

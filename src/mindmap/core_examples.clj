@@ -27,6 +27,7 @@
 
 (demo (def anode (mm/entity {:title "Second node"})))
 (demo (swap! hypermap add-node anode))
+(demo (add-node @hypermap anode))
 (demo @hypermap)
 
 (println (hash anode))

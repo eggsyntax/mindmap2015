@@ -16,8 +16,7 @@ efficiency problems.
   eg (def mynode (entity))
   or (def mynode (entity {:title \"foo\"}).  "
   [properties]
-  (let [base-props {:id (ut/main-indexer)}]
-    (merge base-props properties)))
+    (ut/with-id properties))
 
 (defn default-node []
   (entity {:title "New mindmap"}))
@@ -27,10 +26,10 @@ efficiency problems.
   []
   (let [first-node (default-node)
         first-id (:id first-node)]
-    {:id          (ut/main-indexer)
-     :nodes       {first-id first-node}
-     :edges       {}
-     :cur-pointer first-id}))
+    (ut/with-id
+      {:nodes       {first-id first-node}
+       :edges       {}
+       :cur-pointer first-id})))
 
 (defn get-entity
   "Extract an entity of some type by id"
@@ -100,11 +99,8 @@ efficiency problems.
     (assert (number? (:id entity)))
     ; And the mindmap ought to have this property
     (assert (entity-type mm))
-    (-> mm
-        ; add the new value in the appropriate place
-        (assoc-in [entity-type id] entity)
-        ; and give the modified mm a new id
-        (assoc :id (ut/main-indexer)))))
+    ; add the new value in the appropriate place
+    (ut/with-id (assoc-in mm [entity-type id] entity))))
 
 "Let's say for now that adjacency is represented by a map of maps: origin:dest:edge
 Adjacency representation, whatever it is, should be able to be addressed as a nested map from

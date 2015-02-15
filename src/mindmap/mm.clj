@@ -56,10 +56,13 @@
     (get (:edges mm) edge-id)))
 
  (defn edges-from
-  "Return all edges originating from this node"
+  "Returns a seq of all edges originating from this node"
     [mm node]
-    ; filter out all Entities where this node is the origin
-    (pr "mm/edges-from"))
+    (let [ ; a seq of Relationships whose origin is the node
+          child-rels (filter #(= (:origin-id %) (:id node)) (:adjacency mm))
+          edges ()] 
+       (apply #(conj edges (get-edge mm (:edge-id %))) child-rels) 
+      ))
    
 (defn edges-to
   "Return all edges terminating at this node"

@@ -50,7 +50,6 @@
              {:title "Edge 3" :type :file-contains}))
 (demo (swap! hypermap add-edge anode cur {:title "Edge 4" :type :child}))
 
-(defn print-head [hype] (ppprint (get-head hype)))
 (print-head @hypermap)
 (get-cur @hypermap)
 

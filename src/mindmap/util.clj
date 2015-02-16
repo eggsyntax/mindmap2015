@@ -1,3 +1,5 @@
+(def debug-mode false) ; rebind this in the REPL or wherever as desired
+
 (ns mindmap.util
   (:use [clojure.pprint :only (pprint)])
   (:use [clojure.tools.namespace.repl :only  (refresh)])
@@ -23,11 +25,14 @@
   to add :id last, so it'll contain as much info as possible.
   Note that there's some pathology in clojure hashcode, so this might be a
   place to check for performance issues.
+  If debug-mode evaluates to true, use sequential integer indexes (unique
+  per-run) instead for readability.
   http://dev.clojure.org/display/design/Better+hashing "
   [item]
-  ;(assoc item :id (hash item))
-  (main-indexer)
-  )
+    (assoc item
+           :id
+           (if debug-mode (main-indexer) (hash item))))
+
 
 (defn timestamp
   "Return current timestamp in ms since epoch"

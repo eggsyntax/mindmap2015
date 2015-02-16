@@ -33,6 +33,8 @@
 ;        :cur-pointer first-id})))
      (Mindmap. {first-id first-node} {} #{} (:id first-node))))
 
+(default-mindmap)
+
 (defn get-entity
   "Extract an entity of some type by id"
   [mm ent-type id]

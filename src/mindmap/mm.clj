@@ -59,7 +59,7 @@
   "Returns a seq of all edges originating from this node"
     [mm node]
     (let [child-rels (filter #(= (:origin-id %) (:id node)) (:adjacency mm))]
-      (map #(get-edge mm (:edge-id %)) child-rels))) 
+      (map #(get-edge mm (:edge-id %)) child-rels)))
 
  (defn edges-to
   "Returns a seq of all edges terminating at this node"
@@ -140,7 +140,7 @@
       (assoc :cur-pointer (:id child)))))
 
 
-(defn- remove-edge-no-inc 
+(defn- remove-edge-no-inc
   "Removes the edge and any adjacency information from the mindmap
   Returns new mindmap without updating the id."
   [mm edge]
@@ -153,7 +153,7 @@
 
 (defn remove-child-edges
   "Removes the child edges and adjacency information of the node from the mindmap.
-  If there are no child edges it returns the mindmap, otherwise it returns a new mindmap 
+  If there are no child edges it returns the mindmap, otherwise it returns a new mindmap
   without updating the id. "
   [mm node]
   (let [children (edges-from mm node)]
@@ -163,7 +163,7 @@
 
 (defn remove-parent-edges
   "Removes the edges and adjacency information of the node to it its parent from the mindmap.
-  If there are no parent edges it returns the mindmap, otherwise it returns a new mindmap 
+  If there are no parent edges it returns the mindmap, otherwise it returns a new mindmap
   without updating the id. "
   [mm node]
   (let [parent-edges (edges-to mm node)]
@@ -181,32 +181,39 @@
 
 ; Need to make this recursive on node children
 (defn node-descendents
-  "Does a BFS and returns a seq that is the node and all its descendents"
+  "Does a DFS and returns a seq that is the node and all its descendents"
   [mm node]
   ; Use a stack to do a DFS travesal of all the nodes to remove
-  (loop [nodes [] 
-         explored #{} 
+  (loop [nodes []
+         explored #{}
          frontier [node]]
       (if (empty? frontier)
-        nodes 
+        nodes
         (let [n (peek frontier)
               children (child-nodes mm n)]
-          (recur 
+          (recur
             (conj nodes n)
             (into explored children)
             (into (pop frontier) (remove explored children))
            )))))
 
-(defn remove-node
- [mm node] 
- (let [descendents (node-descendents mm node)] 
-    ; Remove all adges to and from this node, then remove the node
-    ;(-> mindmap 
-      ;(remove-child-edges parent)
-      ;(remove-parent-edges parent)
-      ;(assoc :nodes new-nodes)))
-    (apply 
-      #(%) descendents)
-   ; (assoc mm :id (ut/main-indexer))
-    ))
+
+ (defn remove-node
+  [mm node]
+  ; Remove all adges to and from this node, then remove the node
+  (-> mindmap
+    (remove-child-edges parent)
+    (remove-parent-edges parent)
+    (assoc :nodes new-nodes)))
+
+(defn remove-node-and-children
+  [mm node]
+  (let [descendents (node-descendents mm node)
+        cur-mm mm
+        ]
+
+    (for [nd descendents
+          :let cur-mm (remove-node cur-mm nd)]
+      ))
+  )
 

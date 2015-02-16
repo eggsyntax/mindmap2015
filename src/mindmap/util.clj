@@ -11,9 +11,28 @@
     (let [ai (java.util.concurrent.atomic.AtomicInteger.)]
       (fn [] (.addAndGet ai 1)))))
 
+;TODO - this should be deleted and will no longer be used. Waiting until after our
+; tricky merge to do that.
 (def main-indexer (get-indexer))
 (main-indexer)
-(main-indexer)
+
+;TODO - Sit down w/ G and work out how this will interact with our defrecords.
+(defn with-id
+  "Wrapper around any function that returns a maplike object, which adds
+  an :id field containing the hash of the object. Exists so that it's easy
+  to add :id last, so it'll contain as much info as possible.
+  Note that there's some pathology in clojure hashcode, so this might be a
+  place to check for performance issues.
+  http://dev.clojure.org/display/design/Better+hashing "
+  [item]
+  ;(assoc item :id (hash item))
+  (main-indexer)
+  )
+
+(defn timestamp
+  "Return current timestamp in ms since epoch"
+  []
+  (System/currentTimeMillis))
 
 (defn logged
   "Wrap any form in logged to have it printed to the console."
@@ -36,7 +55,7 @@
 (defn ppprint [thing]
   (println (to-str thing)))
 
-
+(defn print-head [hype] (ppprint ((hype :maps) (hype :head-pointer))))
 
 (defn spaces [n]
   "Get some spaces for padding a string"
@@ -45,7 +64,7 @@
 (spaces 5)
 
 (defmacro demo
-  "demo macro just prints itself and its results to console" 
+  "demo macro just prints itself and its results to console"
   [form]
   (println "***" form "***")
   (println)

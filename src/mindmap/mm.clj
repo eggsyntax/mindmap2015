@@ -6,7 +6,7 @@
 (defrecord Relationship [origin-id dest-id edge-id])
 
 ; Schema this:      val map   map     set       val
-(defrecord Mindmap [id nodes edges adjacency cur-pointer])
+(defrecord Mindmap [nodes edges adjacency cur-pointer])
 
 (defn create-entity
   "Create a new system Entity, passing in any properties
@@ -15,8 +15,8 @@
   eg (def mynode (entity))
   or (def mynode (entity {:title \"foo\"}).  "
   [properties]
-  (let [base-entity (Entity. (ut/main-indexer))]
-    (merge base-entity properties)))
+    (ut/with-id
+      (merge (Entity. nil) {:timestamp (ut/timestamp)} properties)))
 
 (defn default-node
   []
@@ -27,7 +27,11 @@
   []
   (let [first-node (default-node)
         first-id (:id first-node)]
-    (Mindmap. (ut/main-indexer) {first-id first-node} {} #{} (:id first-node))))
+;     (ut/with-id
+;       {:nodes       {first-id first-node}
+;        :edges       {}
+;        :cur-pointer first-id})))
+     (Mindmap. {first-id first-node} {} #{} (:id first-node))))
 
 (defn get-entity
   "Extract an entity of some type by id"
@@ -96,11 +100,8 @@
     (assert (number? (:id entity)))
     ; And the mindmap ought to have this property
     (assert (entity-type mm))
-    (-> mm
-        ; add the new value in the appropriate place
-        (assoc-in [entity-type id] entity)
-        ; and give the modified mm a new id
-        (assoc :id (ut/main-indexer)))))
+    ; add the new value in the appropriate place
+     (assoc-in mm [entity-type id] entity)))
 
 (defn add-node
   "Adds a node with the given attributes to the head mindmap of this hypermap,
@@ -109,8 +110,7 @@
   [mm attributes]
   (let [node (create-entity attributes)]
     (-> mm
-      (update-entity :nodes node)
-      (assoc :cur-pointer (:id node)))))
+      (update-entity :nodes node))))
 
 (defn add-relationship
   "Add a relationship to a mindmap between two nodes.
@@ -139,7 +139,6 @@
       (add-edge parent child edge-attrs)
       (assoc :cur-pointer (:id child)))))
 
-
 (defn- remove-edge-no-inc
   "Removes the edge and any adjacency information from the mindmap
   Returns new mindmap without updating the id."
@@ -148,8 +147,7 @@
         new-edges (into {} (remove #(= (:id edge) (key %)) (:edges mm)))]
     (-> mm
       (assoc :adjacency new-adj-set)
-      (assoc :edges new-edges)
-      )))
+      (assoc :edges new-edges))))
 
 (defn remove-child-edges
   "Removes the child edges and adjacency information of the node from the mindmap.
@@ -176,8 +174,7 @@
   the id of the map. Returns new mingmap with updated id."
   [mm edge]
   (-> mm
-      (remove-edge-no-inc edge)
-      (assoc :id (ut/main-indexer))))
+      (remove-edge-no-inc edge)))
 
 ; Need to make this recursive on node children
 (defn node-descendents
@@ -194,26 +191,27 @@
           (recur
             (conj nodes n)
             (into explored children)
-            (into (pop frontier) (remove explored children))
-           )))))
+            (into (pop frontier) (remove explored children)))))))
 
 
- (defn remove-node
-  [mm node]
-  ; Remove all adges to and from this node, then remove the node
-  (-> mindmap
-    (remove-child-edges parent)
-    (remove-parent-edges parent)
-    (assoc :nodes new-nodes)))
+  (defn remove-node
+   [mm node]
+   ; Remove all adges to and from this node, then remove the node
+;    (-> mm
+;      (remove-child-edges node)
+;      (remove-parent-edges node)
+;      (assoc :nodes new-nodes))
 
-(defn remove-node-and-children
-  [mm node]
-  (let [descendents (node-descendents mm node)
-        cur-mm mm
-        ]
-
-    (for [nd descendents
-          :let cur-mm (remove-node cur-mm nd)]
-      ))
-  )
+    )
+;
+; (defn remove-node-and-children
+;   [mm node]
+;   (let [descendents (node-descendents mm node)
+;         cur-mm mm
+;         ]
+;
+;     (for [nd descendents
+;           :let cur-mm (remove-node cur-mm nd)]
+;       ))
+;   )
 

@@ -1,12 +1,11 @@
 (ns mindmap.core-examples
-  (:use [mindmap.mm-pub]
+  (:use [mindmap.hm :as mm-pub]
         [mindmap.util])
   (:require [mindmap.mm :as mm]))
 
 ; Make it easy to reload namespaces
-;(require 'mindmap.core-examples :reload-all)
 (use '[clojure.tools.namespace.repl :only (refresh)])
-(refresh)
+;(refresh)
 
 ; Just gives some examples of how the core functions work.
 ; Warning! Anything in here with hardcoded numbers won't succeed across
@@ -16,41 +15,38 @@
 
 (default-hypermap)
 (demo (def hypermap (atom (default-hypermap))))
+(def firstnode (get-cur @hypermap))
 (demo @hypermap)
 
 (get-mm @hypermap (:head-pointer @hypermap))
 
-(get-head @hypermap)
-
-(demo (get-head @hypermap))
 (demo (get-cur @hypermap))
 
 (demo (:maps @hypermap))
 (demo (assoc-in @hypermap [:maps 1234] {:foo :bar}))
 
-(demo (def anode (mm/entity {:title "Second node"})))
+(demo (def anode (mm/create-entity {:title "Second node"})))
 (demo (swap! hypermap add-node anode))
-
-; Update our test mindmap:
-(demo (swap! hypermap add-node anode))
+(demo (add-node @hypermap anode))
 (demo @hypermap)
 
-(def anothernode (mm/entity {:title "Third node"}))
+(println (hash anode))
+
+(def anothernode (mm/create-entity {:title "Third node"}))
+(println (hash anothernode))
 (demo anothernode)
 
 (demo (swap! hypermap add-node anothernode))
 (demo @hypermap)
 
-(def firstnode (get-cur @hypermap))
-(demo (swap! hypermap add-edge cur anode {:title "Edge 1" :type :child}))
+(demo (swap! hypermap add-edge firstnode anode {:title "Edge 1" :type :child}))
 (demo (swap! hypermap add-edge anode anothernode {:title "Edge 2" :type :child}))
 
 ; We can add a second edge between the same pair of nodes (some type of edge that I just made up)
 (demo (swap! hypermap add-edge anode anothernode
              {:title "Edge 3" :type :file-contains}))
-(demo (swap! hypermap add-edge anode cur {:title "Edge 4" :type :child}))
+(demo (swap! hypermap add-edge anode firstnode {:title "Edge 4" :type :child}))
 
-(defn print-head [hype] (ppprint (get-head hype)))
 (print-head @hypermap)
 (get-cur @hypermap)
 

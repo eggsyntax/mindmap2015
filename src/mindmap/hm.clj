@@ -3,11 +3,11 @@
             [mindmap.mm :as mm])
   (:gen-class))
 
+;TODO
 "
-TODO
- o Timestamps (which only hypermap nodes have)
  o Validation (Prismatic Schema, validators?)
  o unit tests
+ o test for idempotency on (at least) most of these
 "
 
 (defn get-mm
@@ -34,7 +34,7 @@ TODO
     {:post [(contains? (:maps %) (:id mm))]}
 
     (let [orig-head-id (:head-pointer hyper)
-          new-id (:id mm)
+          new-id (ut/with-id mm)
           new-edge-key [orig-head-id new-id]
           new-edge-val {:type :child} ]
 
@@ -109,14 +109,19 @@ TODO
   [hyper node]
   (mm/edges-to (get-head hyper) node))
 
+(defn empty-hypermap
+  []
+  (ut/with-id {:timestamp (ut/timestamp)}))
+
 ; Create a hypermap for testing
 (defn default-hypermap
   []
   (let [first-mindmap (mm/default-mindmap)
-        first-id (:id first-mindmap)]
-    {:id (ut/main-indexer)
-     :maps {first-id first-mindmap}
-     :map-edges {}
-     :head-pointer first-id}))
-
-(defn print-head [hype] (ut/ppprint (get-head hype)))
+        _ (println "first-mindmap: " first-mindmap)
+        first-id (:id first-mindmap)
+        empty-hype (empty-hypermap)]
+    (println "empty-hype: " empty-hype)
+    (assoc empty-hype
+           :maps {first-id first-mindmap}
+           :map-edges {}
+           :head-pointer first-id)))

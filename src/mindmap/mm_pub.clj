@@ -5,7 +5,6 @@
 
 ;TODO
 "
- o Timestamps (which only hypermap nodes have)
  o Validation (Prismatic Schema, validators?)
  o unit tests
  o test for idempotency on (at least) most of these

@@ -4,6 +4,7 @@
   )
 
 
+;TODO except hmm, do we want timestamps for mindmaps rather than hypermaps? Hmm.
 (defprotocol SerializeProtocol
   "Protocol for serialization (currently to edn, possibly other formats later."
   (serialize [item]
@@ -17,7 +18,7 @@
 (comment
   extend Hypermap
     SerializeProtocol
-    {:serialize (fn [hypermap] (serialize-to-edn hypermap))
+    {:serialize   (fn [hypermap] (serialize-to-edn hypermap))
      :deserialize (fn [text-chunk] (deserialize-from-edn text-chunk))})
 
 (defn serialize-to-edn

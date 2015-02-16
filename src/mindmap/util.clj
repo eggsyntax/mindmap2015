@@ -19,13 +19,17 @@
 (defn with-id
   "Wrapper around any function that returns a maplike object, which adds
   an :id field containing the hash of the object. Exists so that it's easy
-  to add :id last, so it'll contain as much info as possible."
+  to add :id last, so it'll contain as much info as possible.
+  Note that there's some pathology in clojure hashcode, so this might be a
+  place to check for performance issues.
+  http://dev.clojure.org/display/design/Better+hashing "
   [item]
   (assoc item :id (hash item)))
 
-(defn timestamp []
-  3 ;TODO !!!! youarehere
-  )
+(defn timestamp
+  "Return current timestamp in ms since epoch"
+  []
+  (System/currentTimeMillis))
 
 (defn logged
   "Wrap any form in logged to have it printed to the console."

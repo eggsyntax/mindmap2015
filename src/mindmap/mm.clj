@@ -2,35 +2,32 @@
   (:require [mindmap.util :as ut]
             [clojure.set :refer [union]]))
 
-"
-There might be an interesting argument that we shouldn't even have nodes or edges in the mindmap,
-just a hashmap of entities by id, each of which has a type, eg :node or :edge. Then getting all
-nodes just means filtering entities on :type :node. But I suppose that's just begging for
-efficiency problems.
-"
+(defrecord Entity [id])
+(defrecord Relationship [origin-id dest-id edge-id])
 
-(defn entity
-  "Create a new system entity (which is just a map), passing in any properties
+; Schema this:      val map   map     set       val
+(defrecord Mindmap [id nodes edges adjacency cur-pointer])
+
+(defn create-entity
+  "Create a new system Entity, passing in any properties
   you want it to have.  It will be given a unique id automatically. Any other
   properties you want it to have should be passed in as a map.
   eg (def mynode (entity))
   or (def mynode (entity {:title \"foo\"}).  "
   [properties]
-  (let [base-props {:id (ut/main-indexer)}]
-    (merge base-props properties)))
+  (let [base-entity (Entity. (ut/main-indexer))]
+    (merge base-entity properties)))
 
-(defn default-node []
-  (entity {:title "New mindmap"}))
+(defn default-node
+  []
+  (create-entity {:title "New Mindmap"}))
 
 (defn default-mindmap
   "Default mindmap contains one node, no edges."
   []
   (let [first-node (default-node)
         first-id (:id first-node)]
-    {:id          (ut/main-indexer)
-     :nodes       {first-id first-node}
-     :edges       {}
-     :cur-pointer first-id}))
+    (Mindmap. (ut/main-indexer) {first-id first-node} {} #{} (:id first-node))))
 
 (defn get-entity
   "Extract an entity of some type by id"
@@ -38,12 +35,17 @@ efficiency problems.
   ((ent-type mm) id))
 
 (defn get-node
-  "Extract a node by id"
+  "Extract a node Entity by id"
   [mm id]
   (get-entity mm :nodes id))
 
+(defn get-cur
+  "Return the current node of the Mindmap"
+  [mm]
+  (get-node mm (:cur-pointer mm)))
+
 (defn get-edge
-  "Extract an edge by id"
+  "Extract and edge Entity by id"
   [mm id]
   (get-entity mm :edges id))
 
@@ -53,46 +55,40 @@ efficiency problems.
   (for [edge-id edge-ids]
     (get (:edges mm) edge-id)))
 
-(defn edges-from
-  "Return all edges originating at this node"
-  ([mm node]
-    ; they come out as a list of sets which must be joined
-    (apply union
-           (let [adjacency (:adjacency mm)]
-             ;
-             ; An adjacency relation: {origin-id {dest-id #{edge-ids}}
-             ;
-             (for [[origin-id dest-struct] adjacency :when (= origin-id (:id node))
-                   [dest-id edges-ids] dest-struct]
-               (get-edges mm edges-ids)
-               )))))
+ (defn edges-from
+  "Returns a seq of all edges originating from this node"
+    [mm node]
+    (let [child-rels (filter #(= (:origin-id %) (:id node)) (:adjacency mm))]
+      (map #(get-edge mm (:edge-id %)) child-rels)))
 
-(defn edges-to
-  "Return all edges terminating at this node"
-  ([mm node]
-    ; they come out as a list of sets which must be joined
-    (apply union
-           (let [adjacency (:adjacency mm)]
-             ;
-             ; An adjacency relation: {origin-id {dest-id #{edge-ids}}
-             ;
-             (for [[origin-id dest-struct] adjacency
-                   [dest-id edges-ids] dest-struct :when (= dest-id (:id node))
-                   ]
-               (get-edges mm edges-ids)
-               )))
+ (defn edges-to
+  "Returns a seq of all edges terminating at this node"
+    [mm node]
+    (let [par-rels (filter #(= (:dest-id %) (:id node)) (:adjacency mm))]
+      (map #(get-edge mm (:edge-id %)) par-rels)))
 
-    )
-  )
+(defn child-nodes
+  "Returns a seq of all children node Entities of this node"
+  [mm node]
+  (let [child-rels (filter #(= (:origin-id %) (:id node)) (:adjacency mm))]
+    (map #(get-node mm (:dest-id %)) child-rels)))
 
-(defn update
+(defn parent-nodes
+  "Returns a seq of all parent node Entities of this node"
+  [mm node]
+  (let [par-rels (filter #(= (:dest-id %) (:id node)) (:adjacency mm))]
+    (map #(get-node mm (:origin-id %)) par-rels)))
+
+(defn set-cur
+  "Get the current node Entity of the mindmap"
+  [mm node]
+  (assoc mm :cur-pointer (:id node)))
+
+(defn update-entity
   "Update some entity type of a mindmap (nodes or edges) by adding a new value,
   returning an updated mindmap with a new id. "
   [mm entity-type entity]
-  (let [id (:id entity)
-        ;        _ (println "mm/update> Map: " mm)
-        ;        _ (println "mm/update> Adding " entity-type entity)
-        ]
+  (let [id (:id entity)]
     ; nil args are probably a bad idea here -- although maybe it's fine
     ; to be starting from a nil mindmap.
     (assert (ut/no-nils? [mm entity-type entity]))
@@ -106,103 +102,118 @@ efficiency problems.
         ; and give the modified mm a new id
         (assoc :id (ut/main-indexer)))))
 
-"Let's say for now that adjacency is represented by a map of maps: origin:dest:edge
-Adjacency representation, whatever it is, should be able to be addressed as a nested map from
-origin to destination to a set of edge entities (a set because we might conceivably want to
-represent more than one edge between a given pair of nodes).
-Graph search & filtering functions can use either all edges, or only edges with some subset
-of attributes."
+(defn add-node
+  "Adds a node with the given attributes to the head mindmap of this hypermap,
+  and set it as the current node. Does not create any edges in the mindmap.
+  Return the modified hypermap."
+  [mm attributes]
+  (let [node (create-entity attributes)]
+    (-> mm
+      (update-entity :nodes node)
+      (assoc :cur-pointer (:id node)))))
 
-(defn- add-adjacency
-  "Add an adjacency relationship to a mindmap, connecting two nodes through an edge.
+(defn add-relationship
+  "Add a relationship to a mindmap between two nodes.
+  Its unidirectional connecting two nodes through an edge.
   Return modified mindmap."
   [mm origin dest edge]
-  ; set-conj is just conj, but ensures return value is a set.
-  ; Handles the case where the incoming set is nil.
-  (letfn [(set-conj [the-set item] (set (conj the-set item)))]
-    (update-in mm
-               [:adjacency (:id origin) (:id dest)]
-               set-conj (:id edge))))
+  (let [new-relationship (Relationship. (:id origin) (:id dest) (:id edge))
+        new-adj-set (conj (:adjacency mm) new-relationship)]
+    (assoc mm :adjacency new-adj-set)))
 
 (defn add-edge
   "Adds an end between the originating and destination node updating the
    adjacency relation which represents it."
   [mm origin dest attributes]
-  (let [edge-ent (entity attributes)]
+  (let [edge-ent (create-entity attributes)]
     (-> mm
-        (update :edges edge-ent)
-        (add-adjacency origin dest edge-ent))))
+        (update-entity :edges edge-ent)
+        (add-relationship origin dest edge-ent))))
+
+(defn add-new-node-from
+  "Add a new node as the child of the parent node making the child the current node."
+  [mm parent child-attrs edge-attrs]
+  (let [child (create-entity child-attrs)]
+    (-> mm
+      (update-entity :nodes child)
+      (add-edge parent child edge-attrs)
+      (assoc :cur-pointer (:id child)))))
 
 
-(defn- remove-edge-no-id-inc
-  "Removes the edge and any adjacency information from the map without incremeting
-  the mm id"
+(defn- remove-edge-no-inc
+  "Removes the edge and any adjacency information from the mindmap
+  Returns new mindmap without updating the id."
   [mm edge]
-  ;
-  ; remove this edge from the  map
-  ; remove all relevant adjacency relationships
-  ;
-  ; Note: there is a 1-1 mapping between an edge
-  ; and a value in a set contained in the structure
-  ; in the adjacency map:
-  ;
-  ;  {origin-id {dest-id #{edge-ids}}
-  ;
-  ; We need to find the struct in the adjacency map which
-  ; has a set that contains the edge-id.
-  ;
-  ; If this struct's set of edge-id's contains only this edge's id
-  ; then the entire struct should be removed from the adjacency map, otherwise
-  ; just pull the edge-id from the set.
-  ;
-      ; they come out as a list of sets which must be joined
- (apply union
-        (let [adjacency (:adjacency mm)
-              edge-id (:id edge)
-              ]
-          (for [[origin-id dest-struct] adjacency
-                [dest-id edge-ids] dest-struct
-                :when (ut/seq-contains? edge-ids edge-id)
-                ]
-           (
-             (if (= (count edge-ids) 1)
-               ; There has to be an update-in on the mindmap
-               ; that removes the entire adjacency cell
-               ; that contains this edge-id
-               ;
-               (println "Relationship has one Id: " edge-ids)
+  (let [new-adj-set (set (remove #(= (:id edge) (:edge-id %)) (:adjacency mm)))
+        new-edges (into {} (remove #(= (:id edge) (key %)) (:edges mm)))]
+    (-> mm
+      (assoc :adjacency new-adj-set)
+      (assoc :edges new-edges)
+      )))
 
-               ; There has to be an update-in on the mindmap
-               ; that only removes the edge-id from
-               ; the cell that contains the edge-id
-               (println "Relationship has multiple Ids: " edge-ids)
-               )
-             )
-           )
-          ))
- )
+(defn remove-child-edges
+  "Removes the child edges and adjacency information of the node from the mindmap.
+  If there are no child edges it returns the mindmap, otherwise it returns a new mindmap
+  without updating the id. "
+  [mm node]
+  (let [children (edges-from mm node)]
+    (if (empty? children)
+      mm
+      (apply remove-edge-no-inc mm children))))
 
+(defn remove-parent-edges
+  "Removes the edges and adjacency information of the node to it its parent from the mindmap.
+  If there are no parent edges it returns the mindmap, otherwise it returns a new mindmap
+  without updating the id. "
+  [mm node]
+  (let [parent-edges (edges-to mm node)]
+    (if (empty? parent-edges)
+      mm
+      (apply remove-edge-no-inc mm parent-edges))))
 
 (defn remove-edge
   "Removes the edge and any adjacency information from the mindmap incrementing
-   the id of the map. Returns new mingmap with updated id."
+  the id of the map. Returns new mingmap with updated id."
   [mm edge]
   (-> mm
-      (remove-edge-no-id-inc edge)
+      (remove-edge-no-inc edge)
       (assoc :id (ut/main-indexer))))
 
-(defn remove-node
-   "Removes the node, all edges originating from or ending at this node and updates the adjacency relationships. "
+; Need to make this recursive on node children
+(defn node-descendents
+  "Does a DFS and returns a seq that is the node and all its descendents"
   [mm node]
-  ;
-  ; Remove the node entity from the list of nodes
-  ; Remove all edges that either originate from (edges-from)
-  ; or terminate at (edges-to) this node.
-  ;
-  (let [rm-edges (into (edges-from mm node) (edges-to mm node))]
-    (apply remove-edge-no-id-inc rm-edges)
-    ; ? If we are removing the head node what happens ?!
-    (-> mm
-        (dissoc :nodes (:id node))
-        (assoc :id (ut/main-indexer)))))
+  ; Use a stack to do a DFS travesal of all the nodes to remove
+  (loop [nodes []
+         explored #{}
+         frontier [node]]
+      (if (empty? frontier)
+        nodes
+        (let [n (peek frontier)
+              children (child-nodes mm n)]
+          (recur
+            (conj nodes n)
+            (into explored children)
+            (into (pop frontier) (remove explored children))
+           )))))
+
+
+ (defn remove-node
+  [mm node]
+  ; Remove all adges to and from this node, then remove the node
+  (-> mindmap
+    (remove-child-edges parent)
+    (remove-parent-edges parent)
+    (assoc :nodes new-nodes)))
+
+(defn remove-node-and-children
+  [mm node]
+  (let [descendents (node-descendents mm node)
+        cur-mm mm
+        ]
+
+    (for [nd descendents
+          :let cur-mm (remove-node cur-mm nd)]
+      ))
+  )
 

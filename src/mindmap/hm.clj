@@ -1,4 +1,4 @@
-(ns mindmap.mm-pub
+(ns mindmap.hm
   (:require [mindmap.util :as ut]
             [mindmap.mm :as mm])
   (:gen-class))
@@ -24,7 +24,7 @@ TODO
   "Return the current node of the current head of the hypermap."
   [hyper]
   (let [head (get-head hyper)]
-    (mm/get-node head (:cur-pointer head))) )
+    (mm/get-cur head)) )
 
 (defn- commit-mindmap
   "Commit a modified mindmap to this hypermap, and an edge from the previous head to
@@ -50,9 +50,7 @@ TODO
   "Sets node to the current node of the head of the hypermap."
   [hyper node]
   (let [mm (get-head hyper)
-        new-mm
-        (-> mm
-            (assoc :cur-pointer (:id node)))]
+        new-mm (mm/set-cur mm node)]
     (commit-mindmap hyper new-mm)))
 
 (defn add-node
@@ -61,23 +59,14 @@ TODO
   Return the modified hypermap."
   [hyper attributes]
   (let [mm (get-head hyper)
-        node (mm/entity attributes)
-        new-mm
-          (-> mm
-              (mm/update :nodes node)
-              (assoc :cur-pointer (:id node)))]
+        new-mm (mm/add-node mm attributes)]
     (commit-mindmap hyper new-mm)))
 
 (defn add-new-node-from
   "Add a new node as the child of the parent node making the child the current node."
   [hyper parent child-attrs edge-attrs]
   (let [mm (get-head hyper)
-        child (mm/entity child-attrs)
-        new-mm
-        (-> mm
-            (mm/update :nodes child)
-            (mm/add-edge parent child edge-attrs)
-            (assoc :cur-pointer (:id child)))]
+        new-mm (mm/add-new-node-from mm parent child-attrs edge-attrs)]
     (commit-mindmap hyper new-mm)))
 
 (defn remove-node
@@ -129,3 +118,5 @@ TODO
      :maps {first-id first-mindmap}
      :map-edges {}
      :head-pointer first-id}))
+
+(defn print-head [hype] (ut/ppprint (get-head hype)))

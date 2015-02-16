@@ -1,5 +1,6 @@
 (ns mindmap.util
   (:use [clojure.pprint :only (pprint)])
+  (:use [clojure.tools.namespace.repl :only  (refresh)])
   (:import [java.io StringWriter]))
 
 (defn get-indexer
@@ -24,7 +25,9 @@
   place to check for performance issues.
   http://dev.clojure.org/display/design/Better+hashing "
   [item]
-  (assoc item :id (hash item)))
+  ;(assoc item :id (hash item))
+  (main-indexer)
+  )
 
 (defn timestamp
   "Return current timestamp in ms since epoch"
@@ -61,7 +64,7 @@
 (spaces 5)
 
 (defmacro demo
-  "demo macro just prints itself and its results to console" 
+  "demo macro just prints itself and its results to console"
   [form]
   (println "***" form "***")
   (println)

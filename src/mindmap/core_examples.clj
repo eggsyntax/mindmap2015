@@ -1,5 +1,5 @@
 (ns mindmap.core-examples
-  (:use [mindmap.mm-pub]
+  (:use [mindmap.hm :as mm-pub]
         [mindmap.util])
   (:require [mindmap.mm :as mm]))
 
@@ -25,14 +25,14 @@
 (demo (:maps @hypermap))
 (demo (assoc-in @hypermap [:maps 1234] {:foo :bar}))
 
-(demo (def anode (mm/entity {:title "Second node"})))
+(demo (def anode (mm/create-entity {:title "Second node"})))
 (demo (swap! hypermap add-node anode))
 (demo (add-node @hypermap anode))
 (demo @hypermap)
 
 (println (hash anode))
 
-(def anothernode (mm/entity {:title "Third node"}))
+(def anothernode (mm/create-entity {:title "Third node"}))
 (println (hash anothernode))
 (demo anothernode)
 

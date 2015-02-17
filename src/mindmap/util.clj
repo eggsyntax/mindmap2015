@@ -1,24 +1,27 @@
-(def debug-mode false) ; rebind this in the REPL or wherever as desired
-
 (ns mindmap.util
   (:use [clojure.pprint :only (pprint)])
-  (:use [clojure.tools.namespace.repl :only  (refresh)])
+  (:require [clojure.tools.namespace.repl :as nsrepl])
   (:import [java.io StringWriter]))
+
+(def debug-mode false) ; rebind this in the REPL or wherever as desired
+
+(defn r!
+  "Reset REPL.
+  See https://github.com/clojure/tools.namespace for details."
+  []
+  (nsrepl/refresh))
 
 (defn get-indexer
   "Helper function to create an indexer for a mm. Whenever the returned fn
-  is called, it returns an incremented index."
+  is called, it returns an incremented index.
+  TEST only! Shouldn't ever be used in prod."
   []
   (def add-and-get
     (let [ai (java.util.concurrent.atomic.AtomicInteger.)]
       (fn [] (.addAndGet ai 1)))))
 
-;TODO - this should be deleted and will no longer be used. Waiting until after our
-; tricky merge to do that.
 (def main-indexer (get-indexer))
-(main-indexer)
 
-;TODO - Sit down w/ G and work out how this will interact with our defrecords.
 (defn with-id
   "Wrapper around any function that returns a maplike object, which adds
   an :id field containing the hash of the object. Exists so that it's easy
@@ -34,6 +37,8 @@
            (if debug-mode (main-indexer) (hash item))))
 
 
+;TODO think hard about what gets a timestamp, and when. Remember that (in
+;current design) if timestamp changes, id changes.
 (defn timestamp
   "Return current timestamp in ms since epoch"
   []
@@ -54,8 +59,6 @@
   (let [w (StringWriter.)]
     (pprint thing w)
     (.toString w)))
-
-(to-str main-indexer)
 
 (defn ppprint [thing]
   (println (to-str thing)))

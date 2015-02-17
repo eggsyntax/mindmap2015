@@ -1,6 +1,6 @@
 (ns mindmap.test-serialize
   (:use [mindmap.serialize]
-        [mindmap.mm-pub]
+        [mindmap.hm]
         [clojure.test])
   (:require [mindmap.mm :as mm]
             [mindmap.util :as util]))
@@ -11,9 +11,9 @@
 (defn setup []
   (def hypermap (atom (default-hypermap)))
   (def firstnode (get-cur @hypermap))
-  (def anode (mm/entity {:title "Second node"}))
+  (def anode (mm/create-entity {:title "Second node"}))
   (swap! hypermap add-node anode)
-  (def anothernode (mm/entity {:title "Third node"}))
+  (def anothernode (mm/create-entity {:title "Third node"}))
   (swap! hypermap add-node anothernode)
   (swap! hypermap add-edge firstnode anode {:title "Edge 1" :type :child})
   (swap! hypermap add-edge anode anothernode {:title "Edge 2" :type :child}))
@@ -23,6 +23,7 @@
   ; Note that we pull out the :id and :timestmap, since they'll vary on every run.
   ; But also note that we test against the hashes, which we expect to be consistent.
   (let [edn_hype (serialize-to-edn (dissoc @hypermap :id :timestamp))]
+    (spit "/tmp/ser" edn_hype)
     (is (= edn_hype expected_edn_output))))
 
 (run-tests 'mindmap.test-serialize)

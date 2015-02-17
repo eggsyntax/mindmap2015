@@ -38,12 +38,13 @@
           new-edge-key [orig-head-id new-id]
           new-edge-val {:type :child} ]
 
+      ;TODO do we change timestamp?
       (-> hyper
         ; Add mindmap
         (assoc-in [:maps new-id] mm)
         ; Add edge
         (assoc-in [:map-edges new-edge-key] new-edge-val)
-        ; Set head pointer
+        ; Set head pointer ;TODO - only if hash has changed? (Possibly pre-add-timestamp)
         (assoc :head-pointer new-id))))
 
 (defn set-cur

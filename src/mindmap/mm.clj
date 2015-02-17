@@ -164,11 +164,10 @@
 (defn add-new-node-from
   "Add a new node as the child of the parent node making the child the current node."
   [mm parent node-attrs edge-attrs]
-  (let [child (create-entity node-attrs)]
+  (let [node (create-entity node-attrs)]
     (-> mm
-      (update-entity :nodes child)
-      (add-edge parent child edge-attrs)
-      (assoc :cur-pointer (:id child)))))
+        (add-node mm node-attrs)
+        (add-edge parent node edge-attrs))))
 
 (defn- remove-edge-no-inc
   "Removes the edge and any adjacency information from the mindmap

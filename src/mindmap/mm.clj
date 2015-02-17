@@ -20,7 +20,7 @@
 
 (defn default-node
   []
-  (create-entity {:title "New Mindmap"}))
+  (create-entity {:title "Node 1"}))
 
 (defn default-mindmap
   "Default mindmap contains one node, no edges."
@@ -32,8 +32,6 @@
 ;        :edges       {}
 ;        :cur-pointer first-id})))
      (Mindmap. {first-id first-node} {} #{} (:id first-node))))
-
-(default-mindmap)
 
 (defn get-entity
   "Extract an entity of some type by id"
@@ -61,28 +59,48 @@
   (for [edge-id edge-ids]
     (get (:edges mm) edge-id)))
 
+(defn- relationships-between
+  [mm origin dest]
+  (filter 
+    #(and 
+       (= (:origin-id %) (:id origin)) 
+       (= (:dest-id %) (:id dest))) 
+    (:adjacency mm)))
+
+(defn edges-between
+  [mm parent child]
+  (let [child-rels (relationships-between mm parent child)]
+    (map #(get-edge mm (:edge-id %)) child-rels)))
+
+; NOTE This needs to remain public for the unit test to be able to see it
+(defn- filter-relationships-by
+  "Returns a seq of relationship's who's specified key-property match's
+  the id of the entity"
+  [mm entity-type entity]
+  (filter #(= (entity-type %) (:id entity)) (:adjacency mm)))
+
  (defn edges-from
   "Returns a seq of all edges originating from this node"
     [mm node]
-    (let [child-rels (filter #(= (:origin-id %) (:id node)) (:adjacency mm))]
+    (let [child-rels (filter-relationships-by mm :origin-id node)]
       (map #(get-edge mm (:edge-id %)) child-rels)))
 
  (defn edges-to
   "Returns a seq of all edges terminating at this node"
     [mm node]
-    (let [par-rels (filter #(= (:dest-id %) (:id node)) (:adjacency mm))]
+    (let [par-rels (filter-relationships-by mm :dest-id node)]
       (map #(get-edge mm (:edge-id %)) par-rels)))
 
 (defn child-nodes
   "Returns a seq of all children node Entities of this node"
   [mm node]
-  (let [child-rels (filter #(= (:origin-id %) (:id node)) (:adjacency mm))]
+  (let [child-rels (filter-relationships-by mm :origin-id node)]
     (map #(get-node mm (:dest-id %)) child-rels)))
 
 (defn parent-nodes
   "Returns a seq of all parent node Entities of this node"
   [mm node]
-  (let [par-rels (filter #(= (:dest-id %) (:id node)) (:adjacency mm))]
+  (let [par-rels (filter-relationships-by mm :dest-id node)]
     (map #(get-node mm (:origin-id %)) par-rels)))
 
 (defn set-cur
@@ -98,8 +116,6 @@
     ; nil args are probably a bad idea here -- although maybe it's fine
     ; to be starting from a nil mindmap.
     (assert (ut/no-nils? [mm entity-type entity]))
-    ; Nodes and edges have a numeric :id, so the added value better have one
-    (assert (number? (:id entity)))
     ; And the mindmap ought to have this property
     (assert (entity-type mm))
     ; add the new value in the appropriate place
@@ -112,9 +128,11 @@
   [mm attributes]
   (let [node (create-entity attributes)]
     (-> mm
-      (update-entity :nodes node))))
+        (update-entity :nodes node)
+        (assoc :cur-pointer (:id node))
+        )))
 
-(defn add-relationship
+(defn- add-relationship
   "Add a relationship to a mindmap between two nodes.
   Its unidirectional connecting two nodes through an edge.
   Return modified mindmap."
@@ -122,6 +140,7 @@
   (let [new-relationship (Relationship. (:id origin) (:id dest) (:id edge))
         new-adj-set (conj (:adjacency mm) new-relationship)]
     (assoc mm :adjacency new-adj-set)))
+
 
 (defn add-edge
   "Adds an end between the originating and destination node updating the

@@ -37,6 +37,8 @@
            (if debug-mode (main-indexer) (hash item))))
 
 
+;TODO think hard about what gets a timestamp, and when. Remember that (in
+;current design) if timestamp changes, id changes.
 (defn timestamp
   "Return current timestamp in ms since epoch"
   []

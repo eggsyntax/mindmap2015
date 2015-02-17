@@ -1,9 +1,13 @@
 (ns mindmap.test-mm
   (:use [clojure.test]
-        [mindmap.mm])
+        [mindmap.mm]
+        [mindmap.util]
+        )
   (:require [clojure.test :refer :all]
             [clojure.tools.namespace.repl :only  (refresh)]
-            [mindmap.mm :as mm]))
+            [mindmap.mm :as mm]
+            [mindmap.util :as util]
+            ))
 
 (deftest basic-math
   (is (= 4 4)))
@@ -24,32 +28,91 @@
     (is (= (:title (get-cur mmap) "Node 1")))))
 
 (deftest test-add-node-no-edge
-  (def mmap (atom (default-mindmap)))
-  (swap! mmap add-node {:title "Node 2"})
-  (is (= 2 (count (:nodes @mmap)))))
+  (let [mmap (atom (default-mindmap)) ]
+    (swap! mmap add-node {:title "Node 2"})
+    (is (= 2 (count (:nodes @mmap))))))
 
 (deftest test-add-new-node-from
-  (def mmap (atom (default-mindmap)))
-  (def n1 (get-cur @mmap))
-  (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
-  (def n2 (get-cur @mmap))
-  (is (= "Node 2" (:title n2)))
-  (def edge (first (edges-between @mmap n1 n2)))
-  (is (= "Edge 1" (:title edge))))
+  (let [mmap (atom (default-mindmap)) 
+        n1 (get-cur @mmap)
+        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
+        n2 (get-cur @mmap)
+        edge (first (edges-between @mmap n1 n2)) ]
+    (is (= "Node 2" (:title n2)))
+    (is (= "Edge 1" (:title edge))) )
+)
 
 (deftest test-add-2-leaf-tree
-  (def mmap (atom (default-mindmap)))
-  (def n1 (get-cur @mmap))
-  (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
-  (def n2 (get-cur @mmap))
-  (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})
-  (def n3 (get-cur @mmap))
-  (is (= "Node 2" (:title n2)))
-  (def e1 (first (edges-between @mmap n1 n2)))
-  (is (= "Edge 1" (:title e1)))
-  (def e2 (first (edges-between @mmap n1 n3)))
-  (is (= "Edge 2" (:title e2)))
+  (let [mmap (atom (default-mindmap)) 
+        n1 (get-cur @mmap)
+        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
+        n2 (get-cur @mmap) 
+        _ (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})
+        n3 (get-cur @mmap)
+        e1 (first (edges-between @mmap n1 n2)) 
+        e2 (first (edges-between @mmap n1 n3)) ]
+    (is (= "Node 2" (:title n2)))
+    (is (= "Node 3" (:title n3)))
+    (is (= "Edge 1" (:title e1)))
+    (is (= "Edge 2" (:title e2)))
+    ))
+
+(deftest test-child-nodes
+  (let [mmap (atom (default-mindmap))
+        n1 (get-cur @mmap) 
+        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
+        _ (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})]
+      (is (= 2 (count (child-nodes @mmap n1))))))
+
+(deftest test-node-and-descendents
+  (let [mmap (atom (default-mindmap))
+        n1 (get-cur @mmap) 
+        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
+        _ (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})
+        ]
+      (is (= 3 (count (node-and-descendents @mmap n1))))))
+
+(deftest test-remove-edge
+  (let [mmap (atom (default-mindmap)) 
+        n1 (get-cur @mmap)
+        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
+        n2 (get-cur @mmap) 
+        edge (first (edges-between @mmap n1 n2))]
+      (swap! mmap remove-edge edge)
+      (is (= 0 (count (:edges @mmap))))
+      (is (= 0 (count (:adjacency @mmap))))
+    )
   )
+
+(deftest test-remove-node
+  (let [ mmap (atom (default-mindmap))
+        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
+        n2 (get-cur @mmap)
+        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 3"} {:title "Edge 2"})
+        _ (swap! mmap remove-node n2) ]
+    (is (= 2 (count (:nodes @mmap))))
+    (is (= 0 (count (:edges @mmap ))))
+    (is (= 0 (count (:adjacency @mmap)))))
+  )
+
+(deftest test-remove-node-and-children
+  (let [; Make a 2-leaf node
+        mmap (atom (default-mindmap))
+        n1 (get-cur @mmap)
+        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
+        _ (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})
+  
+        ; Attach 2 nodes to the rh leaf 
+        n3 (get-cur @mmap)
+        _ (swap! mmap add-new-node-from n3 {:title "Node 5"} {:title "Edge 3"})
+        _ (swap! mmap add-new-node-from n3 {:title "Node 6"} {:title "Edge 7"})
+        ]
+
+      () 
+    )
+
+  )
+
 
 (run-tests 'mindmap.test-mm)
 

@@ -3,9 +3,6 @@
         [mindmap.util])
   (:require [mindmap.mm :as mm]))
 
-; Make it easy to reload namespaces
-(use '[clojure.tools.namespace.repl :only (refresh)])
-;(refresh)
 
 ; Just gives some examples of how the core functions work.
 ; Warning! Anything in here with hardcoded numbers won't succeed across
@@ -31,7 +28,6 @@
 (demo @hypermap)
 
 (println (hash anode))
-
 (def anothernode (mm/create-entity {:title "Third node"}))
 (println (hash anothernode))
 (demo anothernode)

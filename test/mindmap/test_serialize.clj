@@ -1,6 +1,6 @@
 (ns mindmap.test-serialize
   (:use [mindmap.serialize]
-        [mindmap.mm-pub]
+        [mindmap.hm]
         [clojure.test])
   (:require [mindmap.mm :as mm]
             [mindmap.util :as util]))

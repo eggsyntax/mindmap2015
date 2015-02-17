@@ -1,9 +1,15 @@
-(def debug-mode false) ; rebind this in the REPL or wherever as desired
-
 (ns mindmap.util
   (:use [clojure.pprint :only (pprint)])
-  (:use [clojure.tools.namespace.repl :only  (refresh)])
+  (:require [clojure.tools.namespace.repl :as nsrepl])
   (:import [java.io StringWriter]))
+
+(def debug-mode false) ; rebind this in the REPL or wherever as desired
+
+(defn r!
+  "Reset REPL.
+  See https://github.com/clojure/tools.namespace for details."
+  []
+  (nsrepl/refresh))
 
 (defn get-indexer
   "Helper function to create an indexer for a mm. Whenever the returned fn

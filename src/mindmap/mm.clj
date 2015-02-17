@@ -169,6 +169,15 @@
         (add-node mm node-attrs)
         (add-edge parent node edge-attrs))))
 
+(defn add-new-node-from-returning-mm-and-node
+  "Add a new node as the child of the parent node making the child the current node."
+  [mm parent node-attrs edge-attrs]
+  (let [node (create-entity node-attrs)]
+    (-> mm
+        (add-node mm node-attrs)
+        (add-edge parent node edge-attrs)
+        (list node)))) ; Put in list along with node and return
+
 (defn- remove-edge-no-inc
   "Removes the edge and any adjacency information from the mindmap
   Returns new mindmap without updating the id."

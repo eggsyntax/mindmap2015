@@ -127,17 +127,6 @@
         (update-entity :nodes node)
         (assoc :cur-pointer (:id node)))))
 
-(defn add-node-returning-mm-and-node
-  "Adds a node with the given attributes to the head mindmap of this hypermap,
-  and set it as the current node. Does not create any edges in the mindmap.
-  Return the modified hypermap."
-  [mm node-attrs]
-  (let [node (create-entity node-attrs)]
-    (-> mm
-        (update-entity :nodes node)
-        (assoc :cur-pointer (:id node))
-        (list node)))) ; Put in list along with node and return
-
 (defn- add-relationship
   "Add a relationship to a mindmap between two nodes.
   Its unidirectional connecting two nodes through an edge.
@@ -146,7 +135,6 @@
   (let [new-relationship (Relationship. (:id origin) (:id dest) (:id edge))
         new-adj-set (conj (:adjacency mm) new-relationship)]
     (assoc mm :adjacency new-adj-set)))
-
 
 (defn add-edge
   "Adds an end between the originating and destination node updating the
@@ -160,19 +148,9 @@
 (defn add-new-node-from
   "Add a new node as the child of the parent node making the child the current node."
   [mm parent node-attrs edge-attrs]
-  (let [node (create-entity node-attrs)]
-    (-> mm
-        (add-node mm node-attrs)
-        (add-edge parent node edge-attrs))))
-
-(defn add-new-node-from-returning-mm-and-node
-  "Add a new node as the child of the parent node making the child the current node."
-  [mm parent node-attrs edge-attrs]
-  (let [node (create-entity node-attrs)]
-    (-> mm
-        (add-node mm node-attrs)
-        (add-edge parent node edge-attrs)
-        (list node)))) ; Put in list along with node and return
+  (let [new-map (add-node mm node-attrs)
+        new-node (get-cur new-map) ]
+    (add-edge new-map parent new-node edge-attrs)))
 
 (defn remove-edge
   "Removes the edge and any adjacency information from the mindmap. Returns new mindmap."
@@ -223,7 +201,6 @@
 (defn remove-node
   [mm node]
   (let [new-nodes (into {} (remove #(= (:id node) (key %)) (:nodes mm)))]
-    (println "Deleting: " node)
     (-> mm
       (remove-child-edges node)
       (remove-parent-edges node)

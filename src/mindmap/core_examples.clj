@@ -46,6 +46,7 @@
 (print-head @hypermap)
 (get-cur @hypermap)
 
+(demo (mm/add-node-returning-mm-and-node (get-head @hypermap) {:title "TEMP NODE"}))
 (mm/get-edges @hypermap [67 69])
 
 (get-head @hypermap)

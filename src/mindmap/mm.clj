@@ -129,17 +129,18 @@
   (let [node (create-entity node-attrs)]
     (-> mm
         (update-entity :nodes node)
-        (assoc :cur-pointer (:id node))
-        )))
+        (assoc :cur-pointer (:id node)))))
 
-(defn add-new-node-from
-  "Add a new node as the child of the parent node making the child the current node."
-  [mm parent node-attrs edge-attrs]
-  (let [child (create-entity node-attrs)]
+(defn add-node-returning-mm-and-node
+  "Adds a node with the given attributes to the head mindmap of this hypermap,
+  and set it as the current node. Does not create any edges in the mindmap.
+  Return the modified hypermap."
+  [mm node-attrs]
+  (let [node (create-entity node-attrs)]
     (-> mm
-      (update-entity :nodes child)
-      (add-edge parent child edge-attrs)
-      (assoc :cur-pointer (:id child)))))
+        (update-entity :nodes node)
+        (assoc :cur-pointer (:id node))
+        (list node)))) ; Put in list along with node and return
 
 (defn- add-relationship
   "Add a relationship to a mindmap between two nodes.
@@ -159,6 +160,15 @@
     (-> mm
         (update-entity :edges edge-ent)
         (add-relationship origin dest edge-ent))))
+
+(defn add-new-node-from
+  "Add a new node as the child of the parent node making the child the current node."
+  [mm parent node-attrs edge-attrs]
+  (let [child (create-entity node-attrs)]
+    (-> mm
+      (update-entity :nodes child)
+      (add-edge parent child edge-attrs)
+      (assoc :cur-pointer (:id child)))))
 
 (defn- remove-edge-no-inc
   "Removes the edge and any adjacency information from the mindmap

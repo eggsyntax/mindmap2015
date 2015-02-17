@@ -13,18 +13,15 @@
 
 (defn get-indexer
   "Helper function to create an indexer for a mm. Whenever the returned fn
-  is called, it returns an incremented index."
+  is called, it returns an incremented index.
+  TEST only! Shouldn't ever be used in prod."
   []
   (def add-and-get
     (let [ai (java.util.concurrent.atomic.AtomicInteger.)]
       (fn [] (.addAndGet ai 1)))))
 
-;TODO - this should be deleted and will no longer be used. Waiting until after our
-; tricky merge to do that.
 (def main-indexer (get-indexer))
-(main-indexer)
 
-;TODO - Sit down w/ G and work out how this will interact with our defrecords.
 (defn with-id
   "Wrapper around any function that returns a maplike object, which adds
   an :id field containing the hash of the object. Exists so that it's easy
@@ -60,8 +57,6 @@
   (let [w (StringWriter.)]
     (pprint thing w)
     (.toString w)))
-
-(to-str main-indexer)
 
 (defn ppprint [thing]
   (println (to-str thing)))

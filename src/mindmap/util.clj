@@ -3,7 +3,7 @@
   (:require [clojure.tools.namespace.repl :as nsrepl])
   (:import [java.io StringWriter]))
 
-(def debug-mode false) ; rebind this in the REPL or wherever as desired
+(def debug-mode true) ; rebind this in the REPL or wherever as desired
 
 (defn r!
   "Reset REPL.

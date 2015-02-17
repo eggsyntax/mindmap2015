@@ -1,3 +1,4 @@
+
 (ns mindmap.test-serialize
   (:use [mindmap.serialize]
         [mindmap.hm]
@@ -14,9 +15,9 @@
 (defn setup []
   (def hypermap (atom (default-hypermap)))
   (def firstnode (get-cur @hypermap))
-  (def anode (mm/entity {:title "Second node"}))
+  (def anode (mm/create-entity {:title "Second node"}))
   (swap! hypermap add-node anode)
-  (def anothernode (mm/entity {:title "Third node"}))
+  (def anothernode (mm/create-entity {:title "Third node"}))
   (swap! hypermap add-node anothernode)
   (swap! hypermap add-edge firstnode anode {:title "Edge 1" :type :child})
   (swap! hypermap add-edge anode anothernode {:title "Edge 2" :type :child}))

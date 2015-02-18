@@ -216,7 +216,6 @@
       (remove-child-edges node)
       (remove-parent-edges node)
       (assoc :nodes new-nodes)
-      (ut/ppprint )
     )
   ))
 

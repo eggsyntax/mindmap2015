@@ -1,8 +1,7 @@
 (ns mindmap.core-examples
-  (:use [mindmap.hm :as mm-pub]
-        [mindmap.util])
+  (:use [mindmap.hm :as hm]
+        [mindmap.util :as ut])
   (:require [mindmap.mm :as mm]))
-
 
 ; Just gives some examples of how the core functions work.
 ; Warning! Anything in here with hardcoded numbers won't succeed across
@@ -10,17 +9,11 @@
 
 (demo "foo")
 
-(default-hypermap)
-(demo (def hypermap (atom (default-hypermap))))
-(def firstnode (get-cur @hypermap))
-(demo @hypermap)
+(def hyper (atom (hm/default-hypermap)))
+(demo @hyper)
 
-(get-mm @hypermap (:head-pointer @hypermap))
 (def node1 (get-cur @hypermap))
-
-; What is this for ?
-(demo (:maps @hypermap))
-(demo (assoc-in @hypermap [:maps 1234] {:foo :bar}))
+(demo @hypermap)
 
 (demo (swap! hypermap add-node {:title "Node 2"}))
 (def node2 (get-cur @hypermap))

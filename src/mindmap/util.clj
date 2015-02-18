@@ -24,6 +24,12 @@
 (def main-indexer (get-indexer))
 (main-indexer)
 
+(defn gen-id
+  [item]
+  (if debug-mode
+    (main-indexer) 
+    (hash item)))
+
 ;TODO - Sit down w/ G and work out how this will interact with our defrecords.
 (defn with-id
   "Wrapper around any function that returns a maplike object, which adds
@@ -37,8 +43,7 @@
   [item]
     (assoc item
            :id
-           (if debug-mode (main-indexer) (hash item))))
-
+           (gen-id item)))
 
 (defn timestamp
   "Return current timestamp in ms since epoch"

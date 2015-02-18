@@ -155,35 +155,42 @@
 (defn remove-edge
   "Removes the edge and any adjacency information from the mindmap. Returns new mindmap."
   [mm edge]
-  (let [new-adj-set (set (remove #(= (:id edge) (:edge-id %)) (:adjacency mm)))
-        new-edges (into {} (remove #(= (:id edge) (key %)) (:edges mm))) ]
-    (-> mm
-      (assoc :adjacency new-adj-set)
-      (assoc :edges new-edges))
-    ))
+  (if (empty? edge)
+    mm
+    (let [new-adj-set (set (remove #(= (:id edge) (:edge-id %)) (:adjacency mm)))
+          ;_ (println "r-e> New-Set: " new-adj-set)
+          new-edges (into {} (remove #(= (:id edge) (key %)) (:edges mm)))
+          ;_ (println "r-e> New Edges: " new-edges)
+          ]
+        (-> mm
+          (assoc :adjacency new-adj-set)
+          (assoc :edges new-edges))
+    )))
 
 (defn remove-child-edges
   "Removes the child edges and adjacency information of the node from the mindmap.
   If there are no child edges it returns the mindmap, otherwise it returns a new mindmap
   without updating the id. "
   [mm node]
-  (let [children (edges-from mm node)]
-    (if (empty? children)
-      mm
-      (apply remove-edge mm children))))
+  (let [children (edges-from mm node)
+        _ (println "r-c-e> Children Edges: ")
+        _ (ut/ppprint children)
+        ]
+    (reduce remove-edge mm children)))
 
 (defn remove-parent-edges
   "Removes the edges and adjacency information of the node to it its parent from the mindmap.
   If there are no parent edges it returns the mindmap, otherwise it returns a new mindmap
   without updating the id. "
   [mm node]
-  (let [parent-edges (edges-to mm node)]
-    (if (empty? parent-edges)
-      mm
-      (apply remove-edge mm parent-edges))))
+  (let [parent-edges (edges-to mm node)
+        _ (println "r-p-ce> Parent Edges: ")
+        _ (ut/ppprint parent-edges)
+        ]
+      (reduce remove-edge mm parent-edges)))
 
-(defn node-and-descendents
-  "Does a DFS and returns a seq that is the node and all its descendents"
+(defn node-and-children
+  "Does a DFS and returns a seq that is the node and all its children"
   [mm node]
   ; Use a stack to do a DFS travesal of all the nodes to remove
   (loop [nodes []
@@ -200,18 +207,26 @@
 
 (defn remove-node
   [mm node]
-  (let [new-nodes (into {} (remove #(= (:id node) (key %)) (:nodes mm)))]
+  (println "r-n> Node: " node)
+  (let [new-nodes (into {} (remove #(= (:id node) (key %)) (:nodes mm)))
+        _ (println "r-n> New Nodes:")
+        _ (ut/ppprint new-nodes)
+        ]
     (-> mm
       (remove-child-edges node)
       (remove-parent-edges node)
       (assoc :nodes new-nodes)
+      (ut/ppprint )
     )
   ))
 
 
  (defn remove-node-and-children
    [mm node]
-   (let [descendents (node-and-descendents mm node)]
-     (reduce remove-node mm descendents)
+   (let [children (node-and-children mm node)
+         _ (println "rnac> List: " )
+         _ (ut/ppprint children)
+         ]
+     (reduce remove-node mm children)
    ))
 

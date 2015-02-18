@@ -5,6 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/tools.namespace "0.2.9"]]
+  :plugins  [[cider/cider-nrepl "0.8.2"]]
   :main ^:skip-aot mindmap.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

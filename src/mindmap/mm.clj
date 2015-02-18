@@ -125,7 +125,12 @@
   (let [node (create-entity node-attrs)]
     (-> mm
         (update-entity :nodes node)
-        (assoc :cur-pointer (:id node)))))
+        (assoc :cur-pointer (:id node))
+        ;TODO youarehere
+        ; really all i want to do is add this here:
+        ; (list node) ; Put in list along with node and return
+        ; but, y'know, macrofied to work also on add-new-node-from
+        )))
 
 (defn- add-relationship
   "Add a relationship to a mindmap between two nodes.

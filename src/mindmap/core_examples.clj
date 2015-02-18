@@ -12,8 +12,8 @@
 
 (demo "foo")
 
-(def hyper (atom (hm/default-hypermap)))
-(demo @hyper)
+(def hypermap (atom (hm/default-hypermap)))
+(demo @hypermap)
 
 (def node1 (get-cur @hypermap))
 (demo @hypermap)

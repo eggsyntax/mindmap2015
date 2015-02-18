@@ -9,11 +9,21 @@
  o unit tests
  o test for idempotency on (at least) most of these
 "
+            
+;                    {}    {}      Id of MM
+; (defrecord Edge [id]) ? What will this end up looking like ?
+(defrecord Hypermap [maps map-edges head-pointer])
+
+(defn default-hypermap
+  []
+  (let [first-mindmap (mm/default-mindmap)
+        first-id (ut/gen-id (ut/timestamp))]
+    (Hypermap. {first-id first-mindmap} {} first-id)))
 
 (defn get-mm
   "Extract a mindmap by id"
   [hyper id]
-  ((hyper :maps) id))
+  ((:maps hyper) id))
 
 (defn get-head
   "Get the mindmap which is the current head of the hyperrmap"
@@ -53,6 +63,31 @@
         new-mm (mm/set-cur mm node)]
     (commit-mindmap hyper new-mm)))
 
+(defn edges-between
+  [hyper origin dest]
+  (mm/edges-between (get-head hyper) origin dest))
+
+(defn edges-from
+  "Returns a coll of edges originating from this node."
+  [hyper node]
+  (mm/edges-from (get-head hyper) node))
+
+(defn edges-to
+  "Returns a coll of edges originating from this node."
+  [hyper node]
+  (mm/edges-to (get-head hyper) node))
+
+(defn child-nodes
+  "Returns a seek of all immediate children of the node"
+  [hyper node]
+  (mm/child-nodes (get-head hyper) node))
+
+(defn node-and-children
+  "Returns a coll consisting of Nodes that are DFS-ordering of a node
+  and its children"
+  [hyper node]
+  (mm/node-and-children (get-head hyper) node))
+
 (defn add-node
   "Adds a node with the given attributes to the head mindmap of this hypermap,
   and set it as the current node. Does not create any edges in the mindmap.
@@ -63,20 +98,12 @@
     (commit-mindmap hyper new-mm)))
 
 (defn add-new-node-from
-  "Add a new node as the child of the parent node making the child the current node."
-  [hyper parent child-attrs edge-attrs]
+  "Adds a child node to the given node with the given attributes to the head mindmap of 
+  this hypermap, and set it as the current node. 
+  Return the modified hypermap."
+  [hyper parent attributes]
   (let [mm (get-head hyper)
-        new-mm (mm/add-new-node-from mm parent child-attrs edge-attrs)]
-    (commit-mindmap hyper new-mm)))
-
-(defn remove-node
-  "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
-  Returns the modified hypermap."
-  ; Question: if we remove the current head node what happens ?
-  [hyper node]
-  (let [mm (get-head hyper)
-        new-mm
-        (mm/remove-node mm node)]
+        new-mm (mm/add-new-node-from mm parent attributes)]
     (commit-mindmap hyper new-mm)))
 
 (defn add-edge
@@ -92,36 +119,34 @@
         new-mm  (mm/add-edge mm origin dest attributes)]
     (commit-mindmap hyper new-mm)))
 
+(defn remove-node
+  "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
+  Returns the modified hypermap."
+  ; Question: if we remove the current head node what happens ?
+  [hyper node]
+  (let [mm (get-head hyper)
+        new-mm
+        (mm/remove-node mm node)]
+    (commit-mindmap hyper new-mm)))
+
+(defn remove-node-and-children
+  "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
+  Returns the modified hypermap."
+  ; Question: if we remove the current head node what happens ?
+  [hyper node]
+  (let [mm (get-head hyper)
+        new-mm (mm/remove-node-and-children mm node)]
+    (commit-mindmap hyper new-mm)))
+
 (defn remove-edge
   "Removes an edge from the head of the hypermap. Return the modified hypermap."
   [hyper edge]
   (let [mm (get-head hyper)
         new-mm (mm/remove-edge mm edge)]
     (commit-mindmap hyper new-mm)))
-
-(defn edges-from
-  "Returns a coll of edges originating from this node."
-  [hyper node]
-  (mm/edges-from (get-head hyper) node))
-
-(defn edges-to
-  "Returns a coll of edges originating from this node."
-  [hyper node]
-  (mm/edges-to (get-head hyper) node))
-
-(defn empty-hypermap
-  []
-  (ut/with-id {:timestamp (ut/timestamp)}))
-
-; Create a hypermap for testing
-(defn default-hypermap
-  []
-  (let [first-mindmap (mm/default-mindmap)
-        _ (println "first-mindmap: " first-mindmap)
-        first-id (:id first-mindmap)
-        empty-hype (empty-hypermap)]
-    (println "empty-hype: " empty-hype)
-    (assoc empty-hype
-           :maps {first-id first-mindmap}
-           :map-edges {}
-           :head-pointer first-id)))
+(defn add-new-node-from
+  "Add a new node as the child of the parent node making the child the current node."
+  [hyper parent child-attrs edge-attrs]
+  (let [mm (get-head hyper)
+        new-mm (mm/add-new-node-from mm parent child-attrs edge-attrs)]
+    (commit-mindmap hyper new-mm)))

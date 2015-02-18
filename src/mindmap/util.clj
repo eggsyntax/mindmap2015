@@ -3,7 +3,7 @@
   (:require [clojure.tools.namespace.repl :as nsrepl])
   (:import [java.io StringWriter]))
 
-(def debug-mode (atom true)) ; rebind this in the REPL or wherever as desired
+(def debug-mode false) ; rebind this in the REPL or wherever as desired
 
 (defn r!
   "Reset REPL.
@@ -24,20 +24,26 @@
 (def main-indexer (get-indexer))
 (main-indexer)
 
+(defn gen-id
+  [item]
+  (if debug-mode
+    (main-indexer) 
+    (hash item)))
+
+;TODO - Sit down w/ G and work out how this will interact with our defrecords.
 (defn with-id
   "Wrapper around any function that returns a maplike object, which adds
   an :id field containing the hash of the object. Exists so that it's easy
   to add :id last, so it'll contain as much info as possible.
   Note that there's some pathology in clojure hashcode, so this might be a
   place to check for performance issues.
-  If @debug-mode evaluates to true, use sequential integer indexes (unique
+  If debug-mode evaluates to true, use sequential integer indexes (unique
   per-run) instead for readability.
   http://dev.clojure.org/display/design/Better+hashing "
   [item]
     (assoc item
            :id
-           (if @debug-mode (main-indexer) (hash item))))
-
+           (gen-id item)))
 
 (defn timestamp
   "Return current timestamp in ms since epoch"

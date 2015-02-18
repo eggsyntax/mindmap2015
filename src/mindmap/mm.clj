@@ -158,10 +158,7 @@
   (if (empty? edge)
     mm
     (let [new-adj-set (set (remove #(= (:id edge) (:edge-id %)) (:adjacency mm)))
-          ;_ (println "r-e> New-Set: " new-adj-set)
-          new-edges (into {} (remove #(= (:id edge) (key %)) (:edges mm)))
-          ;_ (println "r-e> New Edges: " new-edges)
-          ]
+          new-edges (into {} (remove #(= (:id edge) (key %)) (:edges mm))) ]
         (-> mm
           (assoc :adjacency new-adj-set)
           (assoc :edges new-edges))
@@ -172,10 +169,7 @@
   If there are no child edges it returns the mindmap, otherwise it returns a new mindmap
   without updating the id. "
   [mm node]
-  (let [children (edges-from mm node)
-        _ (println "r-c-e> Children Edges: ")
-        _ (ut/ppprint children)
-        ]
+  (let [children (edges-from mm node) ]
     (reduce remove-edge mm children)))
 
 (defn remove-parent-edges
@@ -183,10 +177,7 @@
   If there are no parent edges it returns the mindmap, otherwise it returns a new mindmap
   without updating the id. "
   [mm node]
-  (let [parent-edges (edges-to mm node)
-        _ (println "r-p-ce> Parent Edges: ")
-        _ (ut/ppprint parent-edges)
-        ]
+  (let [parent-edges (edges-to mm node) ]
       (reduce remove-edge mm parent-edges)))
 
 (defn node-and-children
@@ -207,11 +198,7 @@
 
 (defn remove-node
   [mm node]
-  (println "r-n> Node: " node)
-  (let [new-nodes (into {} (remove #(= (:id node) (key %)) (:nodes mm)))
-        _ (println "r-n> New Nodes:")
-        _ (ut/ppprint new-nodes)
-        ]
+  (let [new-nodes (into {} (remove #(= (:id node) (key %)) (:nodes mm))) ]
     (-> mm
       (remove-child-edges node)
       (remove-parent-edges node)
@@ -222,10 +209,7 @@
 
  (defn remove-node-and-children
    [mm node]
-   (let [children (node-and-children mm node)
-         _ (println "rnac> List: " )
-         _ (ut/ppprint children)
-         ]
+   (let [children (node-and-children mm node) ]
      (reduce remove-node mm children)
    ))
 

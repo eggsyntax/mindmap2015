@@ -85,24 +85,19 @@
   )
 
 (deftest test-remove-node
-  (let [ mmap (atom (default-mindmap))
+ (let [ mmap (atom (default-mindmap))
         _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
         n2 (get-cur @mmap)
         _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 3"} {:title "Edge 2"})
         ]
-    (println "test-remove-node> Map:")
-    (ppprint @mmap)
     (swap! mmap remove-node n2)
-    (println "test-remove-nocde> Map Post Removal: " )
-    (ppprint @mmap)
-
     (is (= 2 (count (:nodes @mmap))))
     (is (= 0 (count (:edges @mmap ))))
     (is (= 0 (count (:adjacency @mmap)))))
   )
 
 (deftest test-remove-node-and-children
-  (let [; Make a 2-leaf node
+  (let [; Make a 3-leaf node
         mmap (atom (default-mindmap))
         n1 (get-cur @mmap)
         _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
@@ -111,13 +106,13 @@
         ; Attach 2 nodes to the rh leaf 
         n3 (get-cur @mmap)
         _ (swap! mmap add-new-node-from n3 {:title "Node 5"} {:title "Edge 3"})
-        _ (swap! mmap add-new-node-from n3 {:title "Node 6"} {:title "Edge 7"})
+        _ (swap! mmap add-new-node-from n3 {:title "Node 6"} {:title "Edge 4"})
         ]
-    (ppprint @mmap)
     (swap! mmap remove-node-and-children n3) 
-    (ppprint @mmap)
+    (is (= 2 (count (:nodes @mmap))))
+    (is (= 1 (count (:edges @mmap))))
+    (is (= 1 (count (:adjacency @mmap))))
     )
-
   )
 
 

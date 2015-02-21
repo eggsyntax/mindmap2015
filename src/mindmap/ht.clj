@@ -1,6 +1,8 @@
-(ns mindmap.hm
+(ns mindmap.ht
   (:require [mindmap.util :as ut]
-            [mindmap.mm :as mm])
+            [mindmap.mm :as mm]
+            [clojure.zip :as zip]
+            )
   (:gen-class))
 
 ;TODO
@@ -12,29 +14,54 @@
 
 ; Tree structure
 ;
-; ( N1 ((N2) (N3 (N)
-
+; [ N1 [ [N2] [N3 [N4 N5] ] 
+;
+;           N1
+;       N2    N3
+;           N4  N5
+;
 (defrecord Node [id mm attrs])
-(defrecord Hypermap [nodes head-pointer])
+(defrecord Hypertree [nodes head-pointer])
 
-(defn default-hypermap
+(defn default-hypertree
   []
   (let [first-mindmap (mm/default-mindmap)
-        first-id (ut/gen-id (ut/timestamp))]
-    (Hypermap. {first-id first-mindmap} {} first-id)))
+        node-no-id (Node. nil first-mindmap {})
+        first-node (ut/with-id node-no-id) 
+        tree-coll [first-node] 
+        ht (Hypertree. 
+             (atom (zip/vector-zip tree-coll))
+             (:id first-node)) ]
+      ; Move the zipper to point to the first node
+      (swap! (:nodes ht) zip/down) 
+      ht
+    ))
 
 (defn get-mm
   "Extract a mindmap by id"
   [hyper id]
-  ((:maps hyper) id))
+  ; This will not just be a map lookup but a tree traversal
+  ;
+  ; In zipper traverse the tree and return the Node with 
+  ; the given id.
+  nil
+  )
 
 (defn get-head
-  "Get the mindmap which is the current head of the hyperrmap"
+  "Get the mindmap which is the current head of the hypertree"
   [hyper]
-  (get-mm hyper (hyper :head-pointer)))
+  ; The head of the zipper always points to the head mindmap
+  ; and is immediately accessible via nodes.
+  (let [root (zip/node @(:nodes hyper))]
+    (:mm root)))
+
+(defn get-tree-data
+  "Returns the Hypertree data as a nested vector representing the tree of mindmaps."
+  [hyper]
+  (zip/root @(:nodes hyper)))
 
 (defn get-cur
-  "Return the current node of the current head of the hypermap."
+  "Return the current node of the current head of the hypertree."
   [hyper]
   (let [head (get-head hyper)]
     (mm/get-cur head)) )
@@ -64,40 +91,39 @@
   [hyper node]
   (mm/node-and-children (get-head hyper) node))
 
-
-
-
-(defn- commit-mindmap
-  "Commit a modified mindmap to this hypermap, and an edge from the previous head to
+; Note: This will need to become aware of the l/r nature
+;       of the current branch when we adding branching
+;        
+(defn commit-mindmap
+  "Commit a modified mindmap to this hypertree, and an edge from the previous head to
   the new mindmap. Make the new mindmap the head."
   [hyper mm attrs]
-    ; New hypermap had better include this mindmap!
-    {:post [(contains? (:maps %) (:id mm))]}
-
-    (let [orig-head-id (:head-pointer hyper)
-          new-id (ut/with-id mm)
-          new-edge-key [orig-head-id new-id]
-          new-edge-val {:type :child} ]
-
-      (-> hyper
-        ; Add mindmap
-        (assoc-in [:maps new-id] mm)
-        ; Add edge
-        (assoc-in [:map-edges new-edge-key] new-edge-val)
-        ; Set head pointer
-        (assoc :head-pointer new-id))))
+  (let [orig-head-id (:head-pointer hyper)
+        node-no-id (Node. nil mm attrs) 
+        new-node (ut/with-id node-no-id)
+        zatm (:nodes hyper)
+        pre-node (zip/node @zatm)
+        _ (ut/ppprint pre-node) ]
+      ; zip up, insert a new vector with the new node, traverse down to it
+      ;
+      (swap! zatm zip/up)
+      (swap! zatm zip/insert-child [new-node])
+      (swap! zatm zip/down)
+      (swap! zatm zip/down)
+      (assoc hyper :head-pointer (:id new-node))
+      ))
 
 (defn set-cur
-  "Sets node to the current node of the head of the hypermap."
+  "Sets node to the current node of the head of the hypertree"
   [hyper node]
   (let [mm (get-head hyper)
         new-mm (mm/set-cur mm node)]
     (commit-mindmap hyper new-mm)))
 
 (defn add-node
-  "Adds a node with the given attributes to the head mindmap of this hypermap,
+  "Adds a node with the given attributes to the head mindmap of this hypertree,
   and set it as the current node. Does not create any edges in the mindmap.
-  Return the modified hypermap."
+  Return the modified hypertree"
   [hyper node-attrs tree-attrs]
   (let [mm (get-head hyper)
         new-mm (mm/add-node mm node-attrs)]
@@ -105,15 +131,15 @@
 
 (defn add-new-node-from
   "Adds a child node to the given node with the given attributes to the head mindmap of 
-  this hypermap, and set it as the current node. 
-  Return the modified hypermap."
-  [hyper parent node-attrs tree-attrs]
+  this hypertree, and set it as the current node. 
+  Return the modified hypertree"
+  [hyper parent node-attrs edge-attrs tree-attrs]
   (let [mm (get-head hyper)
-        new-mm (mm/add-new-node-from mm parent node-attrs)]
+        new-mm (mm/add-new-node-from mm parent node-attrs edge-attrs)]
     (commit-mindmap hyper new-mm tree-attrs)))
 
 (defn add-edge
-  "Add an edge to tee head mindmap of this hypermap. Return the modified hypermap.
+  "Add an edge to tee head mindmap of this hypertree Return the modified hypertree
   Parameters:
     Hypermap
     Origin node
@@ -127,7 +153,7 @@
 
 (defn remove-node
   "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
-  Returns the modified hypermap."
+  Returns the modified hypertree"
   ; Question: if we remove the current head node what happens ?
   [hyper node]
   (let [mm (get-head hyper)
@@ -137,7 +163,7 @@
 
 (defn remove-node-and-children
   "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
-  Returns the modified hypermap."
+  Returns the modified hypertree"
   ; Question: if we remove the current head node what happens ?
   [hyper node]
   (let [mm (get-head hyper)
@@ -145,14 +171,9 @@
     (commit-mindmap hyper new-mm)))
 
 (defn remove-edge
-  "Removes an edge from the head of the hypermap. Return the modified hypermap."
+  "Removes an edge from the head of the hypertree Return the modified hypertree"
   [hyper edge]
   (let [mm (get-head hyper)
         new-mm (mm/remove-edge mm edge)]
     (commit-mindmap hyper new-mm)))
-(defn add-new-node-from
-  "Add a new node as the child of the parent node making the child the current node."
-  [hyper parent child-attrs edge-attrs]
-  (let [mm (get-head hyper)
-        new-mm (mm/add-new-node-from mm parent child-attrs edge-attrs)]
-    (commit-mindmap hyper new-mm)))
+

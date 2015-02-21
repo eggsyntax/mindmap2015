@@ -1,5 +1,5 @@
 (ns mindmap.text-view
-  (:require [mindmap.hm :as mp]
+  (:require [mindmap.ht :as ht]
             [mindmap.util :as ut]))
 
 

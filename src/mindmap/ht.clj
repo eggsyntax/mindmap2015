@@ -37,16 +37,6 @@
       ht
     ))
 
-(defn get-mm
-  "Extract a mindmap by id"
-  [hyper id]
-  ; This will not just be a map lookup but a tree traversal
-  ;
-  ; In zipper traverse the tree and return the Node with 
-  ; the given id.
-  nil
-  )
-
 (defn get-head
   "Get the mindmap which is the current head of the hypertree"
   [hyper]
@@ -94,16 +84,14 @@
 ; Note: This will need to become aware of the l/r nature
 ;       of the current branch when we adding branching
 ;        
-(defn commit-mindmap
+(defn- commit-mindmap
   "Commit a modified mindmap to this hypertree, and an edge from the previous head to
   the new mindmap. Make the new mindmap the head."
   [hyper mm attrs]
   (let [orig-head-id (:head-pointer hyper)
         node-no-id (Node. nil mm attrs) 
         new-node (ut/with-id node-no-id)
-        zatm (:nodes hyper)
-        pre-node (zip/node @zatm)
-        _ (ut/ppprint pre-node) ]
+        zatm (:nodes hyper) ]
       ; zip up, insert a new vector with the new node, traverse down to it
       ;
       (swap! zatm zip/up)
@@ -115,10 +103,10 @@
 
 (defn set-cur
   "Sets node to the current node of the head of the hypertree"
-  [hyper node]
+  [hyper node tree-attrs]
   (let [mm (get-head hyper)
         new-mm (mm/set-cur mm node)]
-    (commit-mindmap hyper new-mm)))
+    (commit-mindmap hyper new-mm tree-attrs)))
 
 (defn add-node
   "Adds a node with the given attributes to the head mindmap of this hypertree,
@@ -155,25 +143,25 @@
   "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
   Returns the modified hypertree"
   ; Question: if we remove the current head node what happens ?
-  [hyper node]
+  [hyper node tree-attrs]
   (let [mm (get-head hyper)
         new-mm
         (mm/remove-node mm node)]
-    (commit-mindmap hyper new-mm)))
+    (commit-mindmap hyper new-mm tree-attrs)))
 
 (defn remove-node-and-children
   "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
   Returns the modified hypertree"
   ; Question: if we remove the current head node what happens ?
-  [hyper node]
+  [hyper node tree-attrs]
   (let [mm (get-head hyper)
         new-mm (mm/remove-node-and-children mm node)]
-    (commit-mindmap hyper new-mm)))
+    (commit-mindmap hyper new-mm tree-attrs)))
 
 (defn remove-edge
   "Removes an edge from the head of the hypertree Return the modified hypertree"
-  [hyper edge]
+  [hyper edge tree-attrs]
   (let [mm (get-head hyper)
         new-mm (mm/remove-edge mm edge)]
-    (commit-mindmap hyper new-mm)))
+    (commit-mindmap hyper new-mm tree-attrs)))
 

@@ -3,7 +3,7 @@
   (:require [clojure.tools.namespace.repl :as nsrepl])
   (:import [java.io StringWriter]))
 
-(def debug-mode false) ; rebind this in the REPL or wherever as desired
+(def debug-mode (atom false)) ; rebind this in the REPL or wherever as desired
 
 (defn r!
   "Reset REPL.
@@ -27,7 +27,7 @@
 (defn gen-id
   [item]
   (if debug-mode
-    (main-indexer) 
+    (main-indexer)
     (hash item)))
 
 ;TODO - Sit down w/ G and work out how this will interact with our defrecords.

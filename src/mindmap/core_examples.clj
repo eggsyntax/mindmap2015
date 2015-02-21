@@ -3,7 +3,7 @@
         [mindmap.util :as ut])
   (:require [mindmap.mm :as mm]))
 
-(reset! debug-mode true)
+(reset! debug-mode true) ; Uncomment and eval as desired
 ;(r!) ; Refresh REPL before run
 
 ; Just gives some examples of how the core functions work.

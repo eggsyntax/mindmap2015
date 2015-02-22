@@ -1,6 +1,7 @@
 (ns mindmap.util
   (:use [clojure.pprint :only (pprint)])
-  (:require [clojure.tools.namespace.repl :as nsrepl])
+  (:require [clojure.tools.namespace.repl :as nsrepl]
+            [clojure.zip :as zip])
   (:import [java.io StringWriter]))
 
 (def debug-mode (atom false)) ; rebind this in the REPL or wherever as desired
@@ -71,7 +72,10 @@
 (defn ppprint [thing]
   (println (to-str thing)))
 
-(defn print-head [hype] (ppprint ((hype :maps) (hype :head-pointer))))
+(defn print-head [hype]
+  (ppprint
+    (let [root (zip/node @(:nodes hype))]
+      (:mm root))))
 
 (defn spaces [n]
   "Get some spaces for padding a string"
@@ -84,12 +88,10 @@
   [form]
   (println "***" form "***")
   (println)
-  (ppprint (eval form))
-)
+  (ppprint (eval form)))
 
 (defn no-nils? [coll]
-  (every? #(not (nil? %)) coll)
-  )
+  (every? #(not (nil? %)) coll))
 
 (no-nils? [1 2 3])
 (no-nils? [1 nil 3])

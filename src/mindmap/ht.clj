@@ -14,7 +14,7 @@
 
 ; Tree structure
 ;
-; [ N1 [ [N2] [N3 [N4 N5] ] 
+; [ N1 [ [N2] [N3 [N4 N5] ]
 ;
 ;           N1
 ;       N2    N3
@@ -27,13 +27,13 @@
   []
   (let [first-mindmap (mm/default-mindmap)
         node-no-id (Node. nil first-mindmap {})
-        first-node (ut/with-id node-no-id) 
-        tree-coll [first-node] 
-        ht (Hypertree. 
+        first-node (ut/with-id node-no-id)
+        tree-coll [first-node]
+        ht (Hypertree.
              (atom (zip/vector-zip tree-coll))
              (:id first-node)) ]
       ; Move the zipper to point to the first node
-      (swap! (:nodes ht) zip/down) 
+      (swap! (:nodes ht) zip/down)
       ht
     ))
 
@@ -83,13 +83,13 @@
 
 ; Note: This will need to become aware of the l/r nature
 ;       of the current branch when we adding branching
-;        
+;
 (defn- commit-mindmap
   "Commit a modified mindmap to this hypertree, and an edge from the previous head to
   the new mindmap. Make the new mindmap the head."
   [hyper mm attrs]
   (let [orig-head-id (:head-pointer hyper)
-        node-no-id (Node. nil mm attrs) 
+        node-no-id (Node. nil mm attrs)
         new-node (ut/with-id node-no-id)
         zatm (:nodes hyper) ]
       ; zip up, insert a new vector with the new node, traverse down to it
@@ -118,9 +118,9 @@
     (commit-mindmap hyper new-mm tree-attrs)))
 
 (defn add-new-node-from
-  "Adds a child node to the given node with the given attributes to the head mindmap of 
-  this hypertree, and set it as the current node. 
-  Return the modified hypertree"
+  "Adds a child node to the given node with the given attributes to the head
+  mindmap of this hypertree, and set it as the current node.  Return the
+  modified hypertree"
   [hyper parent node-attrs edge-attrs tree-attrs]
   (let [mm (get-head hyper)
         new-mm (mm/add-new-node-from mm parent node-attrs edge-attrs)]
@@ -132,12 +132,16 @@
     Hypermap
     Origin node
     Destination node
-    Map of attributes you would like the edge to have. id will be added automatically."
-  ; Consider interning edges for performance. http://nyeggen.com/post/2012-04-09-clojure/
+    Map of attributes you would like the edge to have.
+      id will be added automatically.
+    Consider interning edges for performance.
+      http://nyeggen.com/post/2012-04-09-clojure/"
   [hyper origin dest edge-attrs tree-attrs]
   (let [mm (get-head hyper)
-        new-mm  (mm/add-edge mm origin dest edge-attrs tree-attrs)]
-    (commit-mindmap hyper new-mm)))
+        new-mm  (mm/add-edge mm origin dest edge-attrs)]
+    (commit-mindmap hyper new-mm tree-attrs)))
+
+(ut/demo (def tht (default-hypertree)))
 
 (defn remove-node
   "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.

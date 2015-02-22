@@ -136,8 +136,8 @@
   ; Consider interning edges for performance. http://nyeggen.com/post/2012-04-09-clojure/
   [hyper origin dest edge-attrs tree-attrs]
   (let [mm (get-head hyper)
-        new-mm  (mm/add-edge mm origin dest edge-attrs tree-attrs)]
-    (commit-mindmap hyper new-mm)))
+        new-mm  (mm/add-edge mm origin dest edge-attrs)]
+    (commit-mindmap hyper new-mm tree-attrs)))
 
 (defn remove-node
   "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.

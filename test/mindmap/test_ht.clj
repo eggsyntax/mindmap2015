@@ -1,12 +1,6 @@
 (ns mindmap.test-ht
-  (:use [mindmap.ht]
-        [mindmap.util]
-        )
-  (:require [clojure.test :refer :all]
-            [clojure.tools.namespace.repl :only  (refresh)]
-            [mindmap.ht :refer :all]
-            [mindmap.util :as ut]
-            ))
+  (:use [mindmap.ht])
+  (:require [clojure.test :refer :all]))
 
 (deftest test-default-hypertree
   (let [hyper (default-hypertree)
@@ -24,6 +18,18 @@
         _ (swap! hyper add-node {:title "Node 2"} {:title "Tree 1"})
         mmap (get-head @hyper) ]
     (is (= 2 (count (:nodes mmap))))))
+
+(deftest test-add-edge
+  (let [hyper (atom (default-hypertree))
+        n1 (get-cur @hyper)
+        _ (swap! hyper add-node {:title "Node 2"} {:title "Tree 1"})
+        n2 (get-cur @hyper)
+        _ (swap! hyper add-edge n1 n2 {:title "Edge 1"} {:title "Tree 1"})
+        ]
+      (is (= 1 (count (edges-between @hyper n1 n2))))
+      (is (= "Edge 1" (:title (first (edges-between @hyper n1 n2)))))
+    )
+  )
 
 (deftest test-add-new-node-from
   (let [hyper (atom (default-hypertree)) 

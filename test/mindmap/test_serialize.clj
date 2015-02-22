@@ -14,8 +14,6 @@
   (def anode (mm/create-entity {:title "Second node"}))
   (swap! hypermap add-node anode {})
   (def anothernode (mm/create-entity {:title "Third node"}))
-  (ut/demo anothernode)
-
 
   (swap! hypermap add-node anothernode {})
   (swap! hypermap add-edge firstnode anode {:title "Edge 1" :type :child} {})

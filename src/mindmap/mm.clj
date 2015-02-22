@@ -6,7 +6,7 @@
 (defrecord Relationship [origin-id dest-id edge-id])
 
 ; Schema this:      val map   map     set       val
-(defrecord Mindmap [nodes edges adjacency cur-pointer])
+(defrecord Mindmap [nodes edges bullshit cur-pointer]) ;TODO calling bullshit temporarily to not break callers right away
 
 (defn create-entity
   "Create a new system Entity, passing in any properties
@@ -55,33 +55,36 @@
   (for [edge-id edge-ids]
     (get (:edges mm) edge-id)))
 
+;TODO needs test
 (defn- relationships-between
   [mm origin dest]
   (filter
     #(and
        (= (:origin-id %) (:id origin))
        (= (:dest-id %) (:id dest)))
-    (:adjacency mm)))
+    (:edges mm)))
 
 (defn edges-between
   [mm parent child]
   (let [child-rels (relationships-between mm parent child)]
     (map #(get-edge mm (:edge-id %)) child-rels)))
 
+;TODO needs test
 ; NOTE This needs to remain public for the unit test to be able to see it
-(defn- filter-relationships-by
-  "Returns a seq of relationship's who's specified key-property match's
+(defn filter-relationships-by
+  "Returns a seq of relationships whose specified key-property matches
   the id of the entity"
   [mm entity-type entity]
   (filter #(= (entity-type %) (:id entity)) (:adjacency mm)))
 
- (defn edges-from
+
+(defn edges-from
   "Returns a seq of all edges originating from this node"
     [mm node]
     (let [child-rels (filter-relationships-by mm :origin-id node)]
       (map #(get-edge mm (:edge-id %)) child-rels)))
 
- (defn edges-to
+(defn edges-to
   "Returns a seq of all edges terminating at this node"
     [mm node]
     (let [par-rels (filter-relationships-by mm :dest-id node)]

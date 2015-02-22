@@ -1,4 +1,4 @@
-(ns mindmap.core-examples
+(ns mindmap.examples
   (:use [mindmap.ht]
         [mindmap.util])
   (:require [mindmap.mm :as mm]))
@@ -32,6 +32,13 @@
 ; We can add a second edge between the same pair of nodes (some type of edge that I just made up)
 (demo (swap! hypermap add-edge node2 node3 {:title "Edge 3" :type :file-contains} {}))
 (demo (swap! hypermap add-edge node1 node3 {:title "Edge 4" :type :child} {}))
+
+(demo (def head (get-head @hypermap)))
+(demo (def e1 (mm/get-edge head 155)))
+(demo (def n1 (mm/get-node head 143)))
+(demo (mm/filter-relationships-by head :child e1))
+(demo (mm/get-edges head [155]))
+(demo (mm/edges-from head n1))
 
 (print-head @hypermap)
 (demo (get-cur @hypermap))

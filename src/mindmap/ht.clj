@@ -141,8 +141,6 @@
         new-mm  (mm/add-edge mm origin dest edge-attrs)]
     (commit-mindmap hyper new-mm tree-attrs)))
 
-(ut/demo (def tht (default-hypertree)))
-
 (defn remove-node
   "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
   Returns the modified hypertree"

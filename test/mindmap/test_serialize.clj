@@ -28,10 +28,10 @@
 ;TODO These tests need to be refactored to a more intelligent representation that doesn't
 ; involve expecting such a specific representation.
 
-(deftest test-serialize-to-edn
-  (setup)
-  ; Note that we pull out the :id and :timestmap, since they'll vary on every run.
-  (let [edn_hype (serialize-to-edn (dissoc @hypermap :id :timestamp))]
-    (is (= edn_hype expected_edn_output))))
+; (deftest test-serialize-to-edn
+;   (setup)
+;   ; Note that we pull out the :id and :timestmap, since they'll vary on every run.
+;   (let [edn_hype (serialize-to-edn (dissoc @hypermap :id :timestamp))]
+;     (is (= edn_hype expected_edn_output))))
 
 ;(run-tests 'mindmap.test-serialize)

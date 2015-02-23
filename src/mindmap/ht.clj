@@ -30,11 +30,11 @@
         first-node (ut/with-id node-no-id)
         tree-coll [first-node]
         ht (Hypertree.
-             (atom (zip/vector-zip tree-coll))
+             (zip/vector-zip tree-coll)
              (:id first-node)) ]
       ; Move the zipper to point to the first node
-      (swap! (:nodes ht) zip/down)
-      ht
+      (assoc ht :nodes (zip/down (:nodes ht)))
+      ;(swap! (:nodes ht) zip/down)
     ))
 
 (defn get-head
@@ -42,13 +42,13 @@
   [hyper]
   ; The head of the zipper always points to the head mindmap
   ; and is immediately accessible via nodes.
-  (let [root (zip/node @(:nodes hyper))]
+  (let [root (zip/node (:nodes hyper))]
     (:mm root)))
 
 (defn get-tree-data
   "Returns the Hypertree data as a nested vector representing the tree of mindmaps."
   [hyper]
-  (zip/root @(:nodes hyper)))
+  (zip/root (:nodes hyper)))
 
 (defn get-cur
   "Return the current node of the current head of the hypertree."
@@ -91,15 +91,18 @@
   (let [orig-head-id (:head-pointer hyper)
         node-no-id (Node. nil mm attrs)
         new-node (ut/with-id node-no-id)
-        zatm (:nodes hyper) ]
+        zipper (:nodes hyper) ]
       ; zip up, insert a new vector with the new node, traverse down to it
       ;
-      (swap! zatm zip/up)
-      (swap! zatm zip/insert-child [new-node])
-      (swap! zatm zip/down)
-      (swap! zatm zip/down)
-      (assoc hyper :head-pointer (:id new-node))
-      ))
+      (-> hyper
+        (assoc 
+             :nodes
+             (-> zipper 
+                  (zip/up) 
+                  (zip/insert-child [new-node]) 
+                  (zip/down)
+                  (zip/down)))
+          (assoc :head-pointer (:id new-node)))))
 
 (defn set-cur
   "Sets node to the current node of the head of the hypertree"

@@ -5,8 +5,8 @@
 (defrecord Entity [id])
 (defrecord Relationship [origin-id dest-id id])
 
-; Schema this:      val map   map     set       val
-(defrecord Mindmap [nodes bullshit adjacency cur-pointer]) ;TODO calling bullshit temporarily to not break callers right away
+; Schema this:      val map   set       val
+(defrecord Mindmap [nodes adjacency cur-pointer])
 
 (defn create-entity
   "Create a new system Entity, passing in any properties you want it
@@ -27,7 +27,7 @@
   []
   (let [first-node (default-node)
         first-id (:id first-node)]
-     (Mindmap. {first-id first-node} {} #{} (:id first-node)))) ;TODO eliminate 2nd arg
+     (Mindmap. {first-id first-node} #{} (:id first-node))))
 
 (defn get-node
   "Extract a node Entity by id"

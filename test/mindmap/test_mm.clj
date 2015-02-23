@@ -99,9 +99,7 @@
         ; Attach 2 nodes to the rh leaf
         n3 (get-cur @mmap)
         _ (swap! mmap add-new-node-from n3 {:title "Node 5"} {:title "Edge 3"})
-        _ (swap! mmap add-new-node-from n3 {:title "Node 6"} {:title "Edge 4"})
-        _ (ut/ppprint @mmap)
-        ]
+        _ (swap! mmap add-new-node-from n3 {:title "Node 6"} {:title "Edge 4"})]
     (swap! mmap remove-node-and-children n3)
     (is (= 2 (count (:nodes @mmap))))
     (is (= 1 (count (:adjacency @mmap))))))

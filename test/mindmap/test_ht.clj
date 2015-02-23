@@ -6,7 +6,7 @@
   (let [hyper (default-hypertree)
         mmap (get-head hyper) ]
     (is (= 1 (count (:nodes mmap))))
-    (is (= 0 (count (:adjacency mmap))))))
+    (is (= 0 (count (:edges mmap))))))
 
 (deftest test-get-cur
   (let [hyper (default-hypertree)]
@@ -109,7 +109,7 @@
         n2 (get-cur @hyper)
         edge (first (edges-between @hyper n1 n2))]
       (swap! hyper remove-edge edge {:comment "Removed Edge"})
-      (is (= 0 (count (:adjacency (get-head @hyper)))))
+      (is (= 0 (count (:edges (get-head @hyper)))))
     )
   )
 
@@ -121,7 +121,7 @@
         ]
     (swap! hyper remove-node n2 {:comment "Removed Node"})
     (is (= 2 (count (:nodes (get-head @hyper)))))
-    (is (= 0 (count (:adjacency (get-head @hyper))))))
+    (is (= 0 (count (:edges (get-head @hyper))))))
   )
 
 (deftest test-remove-node-and-children
@@ -154,7 +154,7 @@
         ]
     (swap! hyper remove-node-and-children n3 {:comment "Removed Node and children"})
     (is (= 2 (count (:nodes (get-head @hyper) ))))
-    (is (= 1 (count (:adjacency (get-head @hyper) ))))
+    (is (= 1 (count (:edges (get-head @hyper) ))))
     )
   )
 

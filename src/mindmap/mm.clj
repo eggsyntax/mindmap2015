@@ -3,14 +3,14 @@
             [clojure.set :refer [union]]))
 
 (defrecord Entity [id])
-(defrecord Relationship [origin-id dest-id edge-id])
+(defrecord Relationship [origin-id dest-id id])
 
 ; Schema this:      val map   map     set       val
-(defrecord Mindmap [nodes edges bullshit cur-pointer]) ;TODO calling bullshit temporarily to not break callers right away
+(defrecord Mindmap [nodes bullshit adjacency cur-pointer]) ;TODO calling bullshit temporarily to not break callers right away
 
 (defn create-entity
-  "Create a new system Entity, passing in any properties
-  you want it to have.  It will be given a unique id automatically. Any other
+  "Create a new system Entity, passing in any properties you want it
+  to have.  It will be given a unique id automatically. Any other
   properties you want it to have should be passed in as a map.
   eg (def mynode (entity))
   or (def mynode (entity {:title \"foo\"}).  "
@@ -29,15 +29,10 @@
         first-id (:id first-node)]
      (Mindmap. {first-id first-node} {} #{} (:id first-node))))
 
-(defn get-entity
-  "Extract an entity of some type by id"
-  [mm ent-type id]
-  ((ent-type mm) id))
-
 (defn get-node
   "Extract a node Entity by id"
   [mm id]
-  (get-entity mm :nodes id))
+  ((:nodes mm) id))
 
 (defn get-cur
   "Return the current node of the Mindmap"
@@ -45,15 +40,16 @@
   (get-node mm (:cur-pointer mm)))
 
 (defn get-edge
-  "Extract and edge Entity by id"
+  "Extract an edge Entity by id"
   [mm id]
-  (get-entity mm :edges id))
+  (first (filter #(= (:id %) id) (:adjacency mm))))
 
+;TODO unused. Delete?
 (defn get-edges
-  "Get some edges from the head of a hypermap by number"
-  [mm edge-ids]
-  (for [edge-id edge-ids]
-    (get (:edges mm) edge-id)))
+  "Get some edges from the head of a hypermap by id"
+  [mm ids]
+  (for [id ids]
+    (get-edge mm id)))
 
 ;TODO needs test
 (defn- relationships-between
@@ -62,33 +58,33 @@
     #(and
        (= (:origin-id %) (:id origin))
        (= (:dest-id %) (:id dest)))
-    (:edges mm)))
+    (:adjacency mm)))
 
 (defn edges-between
   [mm parent child]
   (let [child-rels (relationships-between mm parent child)]
-    (map #(get-edge mm (:edge-id %)) child-rels)))
+    (map #(get-edge mm (:id %)) child-rels)))
 
 ;TODO needs test
 ; NOTE This needs to remain public for the unit test to be able to see it
+;TODO rename: filter-edges-by
 (defn filter-relationships-by
-  "Returns a seq of relationships whose specified key-property matches
-  the id of the entity"
-  [mm entity-type entity]
-  (filter #(= (entity-type %) (:id entity)) (:adjacency mm)))
+  "Returns a seq of relationships whose specified key-property
+  (:origin-id, :dest-id, id) matches the id of the entity"
+  [mm key-property entity]
+  (filter #(= (key-property %) (:id entity)) (:adjacency mm)))
 
+(defn edges-to
+  "Returns a seq of all edges terminating at this node"
+    [mm node]
+    (let [parent-rels (filter-relationships-by mm :dest-id node)]
+      (map #(get-edge mm (:id %)) parent-rels)))
 
 (defn edges-from
   "Returns a seq of all edges originating from this node"
     [mm node]
     (let [child-rels (filter-relationships-by mm :origin-id node)]
-      (map #(get-edge mm (:edge-id %)) child-rels)))
-
-(defn edges-to
-  "Returns a seq of all edges terminating at this node"
-    [mm node]
-    (let [par-rels (filter-relationships-by mm :dest-id node)]
-      (map #(get-edge mm (:edge-id %)) par-rels)))
+      (map #(get-edge mm (:id %)) child-rels)))
 
 (defn child-nodes
   "Returns a seq of all children node Entities of this node"
@@ -114,9 +110,12 @@
   (let [id (:id entity)]
     ; nil args are probably a bad idea here -- although maybe it's fine
     ; to be starting from a nil mindmap.
-    (assert (ut/no-nils? [mm entity-type entity]))
+    (assert (ut/no-nils? [mm entity-type entity])
+            "Don't pass nil args to update-entity.")
     ; And the mindmap ought to have this property
-    (assert (entity-type mm))
+    (assert (entity-type mm)
+            (str "This mindmap doesn't have the entity type "
+                 entity-type))
     ; add the new value in the appropriate place
      (assoc-in mm [entity-type id] entity)))
 
@@ -135,22 +134,27 @@
         ; but, y'know, macrofied to work also on add-new-node-from
         )))
 
-(defn- add-relationship
+(defn add-edge
   "Add a relationship to a mindmap between two nodes.
   Its unidirectional connecting two nodes through an edge.
   Return modified mindmap."
-  [mm origin dest edge]
-  (let [new-relationship (Relationship. (:id origin) (:id dest) (:id edge))
-        new-adj-set (conj (:adjacency mm) new-relationship)]
+  [mm origin dest attributes]
+  (let [temp-id nil
+        new-edge (ut/with-id
+                   (merge
+                     (Relationship. (:id origin) (:id dest) temp-id)
+                     attributes))
+        new-adj-set (conj (:adjacency mm) new-edge)]
+    ;TODO use assoc-in and then don't need to create new-adj-set
     (assoc mm :adjacency new-adj-set)))
 
-(defn add-edge
-  "Adds an end between the originating and destination node updating the
-   adjacency relation which represents it."
+(defn add-edge-old
+  "Adds an end between the originating and destination node updating
+  the adjacency relation which represents it."
   [mm origin dest attributes]
   (let [edge-ent (create-entity attributes)]
     (-> mm
-        (update-entity :edges edge-ent)
+        ;(update-entity :edges edge-ent) ;TODO no longer needed?
         (add-relationship origin dest edge-ent))))
 
 (defn add-new-node-from
@@ -165,7 +169,7 @@
   [mm edge]
   (if (empty? edge)
     mm
-    (let [new-adj-set (set (remove #(= (:id edge) (:edge-id %)) (:adjacency mm)))
+    (let [new-adj-set (set (remove #(= (:id edge) (:id %)) (:adjacency mm)))
           new-edges (into {} (remove #(= (:id edge) (key %)) (:edges mm))) ]
         (-> mm
           (assoc :adjacency new-adj-set)

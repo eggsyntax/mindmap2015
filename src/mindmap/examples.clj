@@ -34,13 +34,12 @@
 (demo (swap! hypermap add-edge node1 node3 {:title "Edge 4" :type :child} {}))
 
 (demo (def head (get-head @hypermap)))
-(demo (def e1 (mm/get-edge head 155)))
-(demo (def n1 (mm/get-node head 143)))
-(demo (mm/filter-relationships-by head :child e1))
-(demo (mm/get-edges head [155]))
-(demo (mm/edges-from head n1))
 
 (print-head @hypermap)
+(mm/get-edge head 222)
+
+(keys (:edges @hypermap))
+
 (demo (get-cur @hypermap))
 
 ; apply-filters example

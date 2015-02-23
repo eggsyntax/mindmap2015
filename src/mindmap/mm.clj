@@ -27,7 +27,7 @@
   []
   (let [first-node (default-node)
         first-id (:id first-node)]
-     (Mindmap. {first-id first-node} {} #{} (:id first-node))))
+     (Mindmap. {first-id first-node} {} #{} (:id first-node)))) ;TODO eliminate 2nd arg
 
 (defn get-node
   "Extract a node Entity by id"
@@ -52,18 +52,13 @@
     (get-edge mm id)))
 
 ;TODO needs test
-(defn- relationships-between
+(defn edges-between
   [mm origin dest]
   (filter
     #(and
        (= (:origin-id %) (:id origin))
        (= (:dest-id %) (:id dest)))
     (:adjacency mm)))
-
-(defn edges-between
-  [mm parent child]
-  (let [child-rels (relationships-between mm parent child)]
-    (map #(get-edge mm (:id %)) child-rels)))
 
 ;TODO needs test
 ; NOTE This needs to remain public for the unit test to be able to see it
@@ -104,8 +99,8 @@
   (assoc mm :cur-pointer (:id node)))
 
 (defn update-entity
-  "Update some entity type of a mindmap (nodes or edges) by adding a new value,
-  returning an updated mindmap with a new id. "
+  "Update some entity type of a mindmap (nodes or edges) by adding a
+  new value, returning an updated mindmap with a new id. "
   [mm entity-type entity]
   (let [id (:id entity)]
     ; nil args are probably a bad idea here -- although maybe it's fine
@@ -120,9 +115,9 @@
      (assoc-in mm [entity-type id] entity)))
 
 (defn add-node
-  "Adds a node with the given attributes to the head mindmap of this hypermap,
-  and set it as the current node. Does not create any edges in the mindmap.
-  Return the modified hypermap."
+  "Adds a node with the given attributes to the head mindmap of this
+  hypermap, and set it as the current node. Does not create any edges
+  in the mindmap.  Return the modified hypermap."
   [mm node-attrs]
   (let [node (create-entity node-attrs)]
     (-> mm
@@ -138,6 +133,7 @@
   "Add a relationship to a mindmap between two nodes.
   Its unidirectional connecting two nodes through an edge.
   Return modified mindmap."
+  ;TODO can now just call create-entity
   [mm origin dest attributes]
   (let [temp-id nil
         new-edge (ut/with-id
@@ -148,15 +144,15 @@
     ;TODO use assoc-in and then don't need to create new-adj-set
     (assoc mm :adjacency new-adj-set)))
 
-(defn add-edge-old
-  "Adds an end between the originating and destination node updating
-  the adjacency relation which represents it."
-  [mm origin dest attributes]
-  (let [edge-ent (create-entity attributes)]
-    (-> mm
-        ;(update-entity :edges edge-ent) ;TODO no longer needed?
-        (add-relationship origin dest edge-ent))))
-
+; (defn add-edge-old
+;   "Adds an end between the originating and destination node updating
+;   the adjacency relation which represents it."
+;   [mm origin dest attributes]
+;   (let [edge-ent (create-entity attributes)]
+;     (-> mm
+;         ;(update-entity :edges edge-ent) ;TODO no longer needed?
+;         (add-relationship origin dest edge-ent))))
+;
 (defn add-new-node-from
   "Add a new node as the child of the parent node making the child the current node."
   [mm parent node-attrs edge-attrs]

@@ -57,14 +57,14 @@
 (println edges)
 
 (mm/get-node (get-head @hypermap) (:id node3))
-(def child-filter #(= (:type (mm/get-node (get-head @hypermap) %)) :child))
 (def test-filter #(= (:type %) :child))
 
 (print-head @hypermap)
-(demo (edges-from @hypermap node1))
-(demo (apply-filters
-        [child-filter]
-        (edges-from @hypermap node1)))
+
+; Returns two edges
+(demo (edges-from @hypermap node2))
+; Returns 1 edge of those 2, the one that's a child.
+(demo (apply-filters [test-filter] (edges-from @hypermap node2)))
 
 ; For a single filter, we could just do "(filter my-filter" instead of "apply-filters [my-filter]"
 (demo (apply-filters [test-filter] (edges-from @hypermap node1)))

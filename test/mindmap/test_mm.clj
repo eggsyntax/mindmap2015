@@ -1,13 +1,10 @@
 (ns mindmap.test-mm
   (:use [clojure.test]
-        [mindmap.mm]
-        [mindmap.util]
-        )
+        [mindmap.mm])
   (:require [clojure.test :refer :all]
             [clojure.tools.namespace.repl :only  (refresh)]
             [mindmap.mm :as mm]
-            [mindmap.util :as util]
-            ))
+            [mindmap.util :as ut]))
 
 (deftest test-default-mindmap
   (let [mmap (default-mindmap)]
@@ -103,10 +100,10 @@
         n3 (get-cur @mmap)
         _ (swap! mmap add-new-node-from n3 {:title "Node 5"} {:title "Edge 3"})
         _ (swap! mmap add-new-node-from n3 {:title "Node 6"} {:title "Edge 4"})
+        _ (ut/ppprint @mmap)
         ]
     (swap! mmap remove-node-and-children n3)
     (is (= 2 (count (:nodes @mmap))))
-    (is (= 1 (count (:edges @mmap))))
     (is (= 1 (count (:adjacency @mmap))))))
 
 

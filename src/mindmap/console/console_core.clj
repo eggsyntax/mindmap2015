@@ -1,4 +1,4 @@
-(ns mindmap.core
+(ns mindmap.console.core
   (:require [clojure.tools.namespace.repl :only  (refresh)])
   (:require [lanterna.screen :as s]))
 

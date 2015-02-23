@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/tools.namespace "0.2.9"]
                  [prismatic/schema "0.3.7"]
-                 ]
+                 [clojure-lanterna "0.9.4"] ]
   :plugins  [[cider/cider-nrepl "0.8.2"]]
   :main ^:skip-aot mindmap.core
   :target-path "target/%s"

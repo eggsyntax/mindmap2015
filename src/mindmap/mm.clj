@@ -144,15 +144,6 @@
     ;TODO use assoc-in and then don't need to create new-adj-set
     (assoc mm :adjacency new-adj-set)))
 
-; (defn add-edge-old
-;   "Adds an end between the originating and destination node updating
-;   the adjacency relation which represents it."
-;   [mm origin dest attributes]
-;   (let [edge-ent (create-entity attributes)]
-;     (-> mm
-;         ;(update-entity :edges edge-ent) ;TODO no longer needed?
-;         (add-relationship origin dest edge-ent))))
-;
 (defn add-new-node-from
   "Add a new node as the child of the parent node making the child the current node."
   [mm parent node-attrs edge-attrs]
@@ -165,12 +156,9 @@
   [mm edge]
   (if (empty? edge)
     mm
-    (let [new-adj-set (set (remove #(= (:id edge) (:id %)) (:adjacency mm)))
-          new-edges (into {} (remove #(= (:id edge) (key %)) (:edges mm))) ]
+    (let [new-adj-set (set (remove #(= (:id edge) (:id %)) (:adjacency mm)))]
         (-> mm
-          (assoc :adjacency new-adj-set)
-          (assoc :edges new-edges))
-    )))
+          (assoc :adjacency new-adj-set)))))
 
 (defn remove-child-edges
   "Removes the child edges and adjacency information of the node from the mindmap.

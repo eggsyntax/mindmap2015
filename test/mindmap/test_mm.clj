@@ -9,7 +9,6 @@
 (deftest test-default-mindmap
   (let [mmap (default-mindmap)]
     (is (= 1 (count (:nodes mmap))))
-    (is (= 0 (count (:edges mmap))))
     (is (= 0 (count (:adjacency mmap))))))
 
 (deftest test-create-entity
@@ -73,7 +72,6 @@
         n2 (get-cur @mmap)
         edge (first (edges-between @mmap n1 n2))]
       (swap! mmap remove-edge edge)
-      (is (= 0 (count (:edges @mmap))))
       (is (= 0 (count (:adjacency @mmap))))
     )
   )
@@ -86,7 +84,6 @@
         ]
     (swap! mmap remove-node n2)
     (is (= 2 (count (:nodes @mmap))))
-    (is (= 0 (count (:edges @mmap ))))
     (is (= 0 (count (:adjacency @mmap))))))
 
 (deftest test-remove-node-and-children

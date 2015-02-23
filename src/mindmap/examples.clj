@@ -38,8 +38,6 @@
 (print-head @hypermap)
 (mm/get-edge head 222)
 
-(keys (:edges @hypermap))
-
 (demo (get-cur @hypermap))
 
 ; apply-filters example

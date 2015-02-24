@@ -25,21 +25,24 @@
     (swap! mmap add-node {:title "Node 2"})
     (is (= 2 (count (:nodes @mmap))))))
 
-(deftest test-add-new-node-from
+(defn make-map
+  "Convenience function because we do this a bunch"
+  []
   (let [mmap (atom (default-mindmap))
         n1 (get-cur @mmap)
         _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
-        n2 (get-cur @mmap)
+        n2 (get-cur @mmap)]
+    [mmap n1 n2]))
+
+(deftest test-add-new-node-from
+  (let [[mmap n1 n2] (make-map)
         edge (first (edges-between @mmap n1 n2)) ]
     (is (= "Node 2" (:title n2)))
     (is (= "Edge 1" (:title edge))) )
 )
 
 (deftest test-add-2-leaf-tree
-  (let [mmap (atom (default-mindmap))
-        n1 (get-cur @mmap)
-        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
-        n2 (get-cur @mmap)
+  (let [[mmap n1 n2] (make-map)
         _ (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})
         n3 (get-cur @mmap)
         e1 (first (edges-between @mmap n1 n2))
@@ -66,10 +69,7 @@
       (is (= 3 (count (node-and-children @mmap n1))))))
 
 (deftest test-remove-edge
-  (let [mmap (atom (default-mindmap))
-        n1 (get-cur @mmap)
-        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
-        n2 (get-cur @mmap)
+  (let [[mmap n1 n2] (make-map)
         edge (first (edges-between @mmap n1 n2))]
       (swap! mmap remove-edge edge)
       (is (= 0 (count (:edges @mmap))))
@@ -77,30 +77,42 @@
   )
 
 (deftest test-remove-node
- (let [ mmap (atom (default-mindmap))
-        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
-        n2 (get-cur @mmap)
-        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 3"} {:title "Edge 2"})
-        ]
+ (let [[mmap n1 n2] (make-map)
+       _ (swap! mmap add-new-node-from (get-cur @mmap)
+                                        {:title "Node 3"}
+                                        {:title "Edge 2"})]
     (swap! mmap remove-node n2)
     (is (= 2 (count (:nodes @mmap))))
     (is (= 0 (count (:edges @mmap))))))
 
 (deftest test-remove-node-and-children
   (let [; Make a 3-leaf node
-        mmap (atom (default-mindmap))
-        n1 (get-cur @mmap)
-        _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
+        [mmap n1 n2] (make-map)
         _ (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})
-
-        ; Attach 2 nodes to the rh leaf
         n3 (get-cur @mmap)
+        ; Attach 2 nodes to the rh leaf
         _ (swap! mmap add-new-node-from n3 {:title "Node 5"} {:title "Edge 3"})
         _ (swap! mmap add-new-node-from n3 {:title "Node 6"} {:title "Edge 4"})]
     (swap! mmap remove-node-and-children n3)
     (is (= 2 (count (:nodes @mmap))))
     (is (= 1 (count (:edges @mmap))))))
 
+; (deftest test-remove-node-and-children
+;   (let [; Make a 3-leaf node
+;         mmap (atom (default-mindmap))
+;         n1 (get-cur @mmap)
+;         _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
+;         _ (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})
+;
+;         ; Attach 2 nodes to the rh leaf
+;         n3 (get-cur @mmap)
+;         _ (swap! mmap add-new-node-from n3 {:title "Node 5"} {:title "Edge 3"})
+;         _ (swap! mmap add-new-node-from n3 {:title "Node 6"} {:title "Edge 4"})]
+;     (swap! mmap remove-node-and-children n3)
+;     (is (= 2 (count (:nodes @mmap))))
+;     (is (= 1 (count (:edges @mmap))))))
+;
+; (test-remove-node-and-children)
 
 (run-tests 'mindmap.test-mm)
 

@@ -17,7 +17,9 @@
 (defn new-appinfo  []
     (new Appinfo
        (new Context)
-       [(->UI :start)]
+       [(->UI :header) (->UI :start) 
+       ; (->UI :cmdline)
+        ]
        nil))
 
 ; Main ------------------------------------------------------------------------
@@ -28,6 +30,10 @@
             (draw-app appinfo screen)
             (if  (nil? input)
               (recur  (get-input appinfo screen))
+              ;
+              ; TODO 
+              ; Input buffering for command history will need to be 
+              ; gotten from here 
               (recur  (process-input  (dissoc appinfo :input) input))))))
 
 (defn main

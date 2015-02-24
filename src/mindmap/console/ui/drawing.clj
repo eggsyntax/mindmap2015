@@ -53,19 +53,33 @@
     (:kind ui)))
 
 (defmethod draw-ui [] [ui appinfo screen]
-  (println "draw-ui> Nothing to draw"))
+  ())
+
+(defmethod draw-ui :header [ui appinfo screen]
+  (draw-header screen))
+
+; TODO This will become pretty sofisticated eventually
+;
+; o It will need to reflect the current command being typed in
+; o It would be nice for the background color to be a strip
+;   the width of the cursor line
+; 
+(defmethod draw-ui :cmdline [ui appinfo screen]
+  (let [[height] @screen-size
+        pos (- height 1) ]
+    (println ":cmdline > height=" height " pos=" pos)
+    ; 
+    (s/put-string screen 0 pos ">" {:fg :green})
+    (s/move-cursor screen 1 pos)))
 
 (defmethod draw-ui :start [ui appinfo screen]
-  (draw-header screen)
-  (s/put-string screen 10 2 "Press enter to win, anything else to lose" ))
+  (s/put-string screen 10 5 "Press enter to win, anything else to lose" ))
 
 (defmethod draw-ui :win [ui appinfo screen]
-  (draw-header screen)
-  (s/put-string screen 10 2 "Win Mode: press escape to exit anything else to restart"))
+  (s/put-string screen 10 5 "Win Mode: press escape to exit anything else to restart"))
 
 (defmethod draw-ui :lose [ui appinfo screen]
-  (s/put-string screen 25 0 "Hypertree Console 0.1" )
-  (s/put-string screen 10 2 "Lose input: press escape to exit anything else to go"))
+  (s/put-string screen 10 5 "Lose input: press escape to exit anything else to go"))
 
 (defn draw-app [appinfo screen]
   (clear-screen screen)

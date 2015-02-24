@@ -1,3 +1,5 @@
 # Who the hell makes these .un~ files? Grr.
 *.un~
 
+# Ignore a dir I made to avoid having to type ../../test/mindmap/
+ln_tests

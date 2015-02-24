@@ -1,9 +1,10 @@
 (ns mindmap.util
   (:use [clojure.pprint :only (pprint)])
-  (:require [clojure.tools.namespace.repl :as nsrepl])
+  (:require [clojure.tools.namespace.repl :as nsrepl]
+            [clojure.zip :as zip])
   (:import [java.io StringWriter]))
 
-(def debug-mode false) ; rebind this in the REPL or wherever as desired
+(def debug-mode (atom false)) ; rebind this in the REPL or wherever as desired
 
 (defn r!
   "Reset REPL.
@@ -22,6 +23,13 @@
 
 (def main-indexer (get-indexer))
 
+(defn gen-id
+  [item]
+  (if debug-mode
+    (main-indexer)
+    (hash item)))
+
+;TODO - Sit down w/ G and work out how this will interact with our defrecords.
 (defn with-id
   "Wrapper around any function that returns a maplike object, which adds
   an :id field containing the hash of the object. Exists so that it's easy
@@ -34,8 +42,7 @@
   [item]
     (assoc item
            :id
-           (if debug-mode (main-indexer) (hash item))))
-
+           (gen-id item)))
 
 ;TODO think hard about what gets a timestamp, and when. Remember that (in
 ;current design) if timestamp changes, id changes.
@@ -63,7 +70,10 @@
 (defn ppprint [thing]
   (println (to-str thing)))
 
-(defn print-head [hype] (ppprint ((hype :maps) (hype :head-pointer))))
+(defn print-head [hype]
+  (ppprint
+    (let [root (zip/node @(:nodes hype))]
+      (:mm root))))
 
 (defn spaces [n]
   "Get some spaces for padding a string"
@@ -76,12 +86,10 @@
   [form]
   (println "***" form "***")
   (println)
-  (ppprint (eval form))
-)
+  (ppprint (eval form)))
 
 (defn no-nils? [coll]
-  (every? #(not (nil? %)) coll)
-  )
+  (every? #(not (nil? %)) coll))
 
 (no-nils? [1 2 3])
 (no-nils? [1 nil 3])

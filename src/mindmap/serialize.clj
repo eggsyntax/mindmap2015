@@ -8,7 +8,7 @@
 (defprotocol SerializeProtocol
   "Protocol for serialization (currently to edn, possibly other formats later."
   (serialize [item]
-             "Create a serialization of this structure (typically a hypermap)")
+             "Create a serialization of this structure")
   (deserialize [text-chunk]
                "Reconstruct original structure from  serialization."))
 
@@ -29,4 +29,7 @@
   [item]
   (to-str item))
 
-;(defn)
+(defn deserialize-from-edn
+  [text-chunk]
+  (edn/read text-chunk)
+  )

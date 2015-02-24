@@ -14,16 +14,14 @@
 
 (defn get-indexer
   "Helper function to create an indexer for a mm. Whenever the returned fn
-  is called, it returns an incremented index."
+  is called, it returns an incremented index.
+  TEST only! Shouldn't ever be used in prod."
   []
   (def add-and-get
     (let [ai (java.util.concurrent.atomic.AtomicInteger.)]
       (fn [] (.addAndGet ai 1)))))
 
-;TODO - this should be deleted and will no longer be used. Waiting until after our
-; tricky merge to do that.
 (def main-indexer (get-indexer))
-(main-indexer)
 
 (defn gen-id
   [item]
@@ -36,16 +34,18 @@
   "Wrapper around any function that returns a maplike object, which adds
   an :id field containing the hash of the object. Exists so that it's easy
   to add :id last, so it'll contain as much info as possible.
-  Note that there's some pathology in clojure hashcode, so this might be a
-  place to check for performance issues.
   If debug-mode evaluates to true, use sequential integer indexes (unique
   per-run) instead for readability.
+  Note that there's some pathology in clojure hashcode, so this might be a
+  place to check for performance issues.
   http://dev.clojure.org/display/design/Better+hashing "
   [item]
     (assoc item
            :id
            (gen-id item)))
 
+;TODO think hard about what gets a timestamp, and when. Remember that (in
+;current design) if timestamp changes, id changes.
 (defn timestamp
   "Return current timestamp in ms since epoch"
   []
@@ -66,8 +66,6 @@
   (let [w (StringWriter.)]
     (pprint thing w)
     (.toString w)))
-
-(to-str main-indexer)
 
 (defn ppprint [thing]
   (println (to-str thing)))

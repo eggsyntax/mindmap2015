@@ -12,15 +12,12 @@
   (def hypermap (atom (default-hypertree)))
   (def firstnode (get-cur @hypermap))
   (def anode (mm/create-entity {:title "Second node"}))
+
   (swap! hypermap add-node anode {})
   (def anothernode (mm/create-entity {:title "Third node"}))
-
   (swap! hypermap add-node anothernode {})
   (swap! hypermap add-edge firstnode anode {:title "Edge 1" :type :child} {})
   (swap! hypermap add-edge anode anothernode {:title "Edge 2" :type :child} {}))
-
-
-
 
 
 ;TODO These tests need to be refactored to a more intelligent representation that doesn't

@@ -6,7 +6,14 @@
 (defrecord Edge [origin-id dest-id id])
 
 ; Schema this:      val map   set       val
+; Call create-edge rather than constructing directly
 (defrecord Mindmap [nodes edges cur-pointer])
+
+(defn- merge-with-timestamp-and-id
+  "Merge properties into item, also adding timestamp and id"
+  [item properties]
+  (ut/with-id
+    (merge item {:timestamp (ut/timestamp)} properties)))
 
 (defn create-entity
   "Create a new system Entity, passing in any properties you want it
@@ -15,8 +22,13 @@
   eg (def mynode (entity))
   or (def mynode (entity {:title \"foo\"}).  "
   [properties]
-    (ut/with-id
-      (merge (Entity. nil) {:timestamp (ut/timestamp)} properties)))
+  (merge-with-timestamp-and-id (Entity. nil) properties))
+
+(defn create-edge
+  "Create an Edge, passing in origin node, dest node, and any other properties
+  you want it to have. It will be given its own id automatically."
+  [origin dest properties]
+  (merge-with-timestamp-and-id (Edge. (:id origin) (:id dest) nil) properties))
 
 (defn default-node
   []
@@ -121,6 +133,17 @@
     (-> mm
         (update-entity :nodes node)
         (assoc :cur-pointer (:id node)))))
+
+; (defn add-edge
+;   "Add an edge to a mindmap between two nodes.
+;   Its unidirectional connecting two nodes through an edge.
+;   Return modified mindmap."
+;   [mm origin dest attributes]
+;   (let [edge (create-edge {:id origin} {:id dest} attributes)
+;         updated-edges (conj (:edges mm) edge)
+;         ;_ (ut/demo ("updated edges:" updated-edges))
+;         ]
+;     (assoc mm :edges updated-edges)))
 
 (defn add-edge
   "Add an edge to a mindmap between two nodes.

@@ -64,17 +64,18 @@
   (let [mmap (atom (default-mindmap))
         n1 (get-cur @mmap)
         _ (swap! mmap add-new-node-from (get-cur @mmap) {:title "Node 2"} {:title "Edge 1"})
-        _ (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})
-        ]
+        _ (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})]
       (is (= 3 (count (node-and-children @mmap n1))))))
 
 (deftest test-remove-edge
   (let [[mmap n1 n2] (make-map)
-        edge (first (edges-between @mmap n1 n2))]
+        edge (first (edges-between @mmap n1 n2))
+        _ (ut/ppprint mmap)
+        ]
       (swap! mmap remove-edge edge)
-      (is (= 0 (count (:edges @mmap))))
-    )
-  )
+      (is (= 0 (count (:edges @mmap))))))
+
+(test-remove-edge)
 
 (deftest test-remove-node
  (let [[mmap n1 n2] (make-map)

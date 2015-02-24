@@ -72,7 +72,7 @@
 
 (defn print-head [hype]
   (ppprint
-    (let [root (zip/node @(:nodes hype))]
+    (let [root (zip/node (:nodes hype))]
       (:mm root))))
 
 (defn spaces [n]

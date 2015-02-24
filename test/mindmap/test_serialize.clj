@@ -13,21 +13,12 @@
   (def firstnode (get-cur @hypermap))
   (def anode (mm/create-entity {:title "Second node"}))
 
-  (swap! hypermap add-node anode)
+  (swap! hypermap add-node anode {})
   (def anothernode (mm/create-entity {:title "Third node"}))
-  (swap! hypermap add-node anothernode)
-  (swap! hypermap add-edge firstnode anode {:title "Edge 1" :type :child})
-  (swap! hypermap add-edge anode anothernode {:title "Edge 2" :type :child}))
+  (swap! hypermap add-node anothernode {})
+  (swap! hypermap add-edge firstnode anode {:title "Edge 1" :type :child} {})
+  (swap! hypermap add-edge anode anothernode {:title "Edge 2" :type :child} {}))
 
-(deftest test-serialize-to-edn
-  (setup)
-  ; Note that we pull out the :id and :timestmap, since they'll vary on every run.
-  ; But also note that we test against the hashes, which we expect to be consistent.
-  (let [edn_hype (serialize-to-edn (dissoc @hypermap :id :timestamp))]
-    (spit "/tmp/ser" edn_hype)
-    (is (= edn_hype expected_edn_output))))
-
-(run-tests 'mindmap.test-serialize)
 
 ;TODO These tests need to be refactored to a more intelligent representation that doesn't
 ; involve expecting such a specific representation.

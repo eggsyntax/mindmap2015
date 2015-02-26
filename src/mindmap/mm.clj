@@ -134,13 +134,28 @@
         (update-entity :nodes node)
         (assoc :cur-pointer (:id node)))))
 
+; (defn add-edge
+;   "Add a directional edge to a mindmap between two nodes.
+;   Return modified mindmap."
+;   [mm origin dest attributes]
+;   (let [edge (create-edge {:id origin} {:id dest} attributes)
+;         updated-edges (conj (:edges mm) edge)]
+;     (assoc mm :edges updated-edges)))
+
 (defn add-edge
-  "Add a directional edge to a mindmap between two nodes.
+  "Add an edge to a mindmap between two nodes.
+  Its unidirectional connecting two nodes through an edge.
   Return modified mindmap."
+  ;TODO can now just call create-entity
   [mm origin dest attributes]
-  (let [edge (create-edge {:id origin} {:id dest} attributes)
-        updated-edges (conj (:edges mm) edge)]
-    (assoc mm :edges updated-edges)))
+  (let [temp-id nil
+        new-edge (ut/with-id
+                   (merge (Edge. (:id origin) (:id dest) temp-id) attributes))
+        edge (create-edge {:id origin} {:id dest} attributes)
+        ; create-edge: (merge-with-timestamp-and-id (Edge. (:id origin) (:id dest) nil) properties)
+        new-adj-set (conj (:edges mm) new-edge)]
+    ;TODO use assoc-in and then don't need to create new-adj-set
+    (assoc mm :edges new-adj-set)))
 
 (defn add-new-node-from
   "Add a new node as the child of the parent node making the child the current node."

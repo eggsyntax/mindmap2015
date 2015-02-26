@@ -10,6 +10,9 @@ pom.xml.asc
 /.nrepl-port
 /src/py-env
 
+# Ignore ctags dir
+tags
+
 # IntelliJ stuff
 /.idea
 /mindmap.iml

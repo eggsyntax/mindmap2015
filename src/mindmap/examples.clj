@@ -63,7 +63,7 @@
 ; Make sure we can create and add edges properly
 (get (:nodes (get-head @hypermap)) 33)
 (demo (mm/create-edge node3 node1 {:title "Edge n3->n1" :type :child}))
-(demo (mm/add-edge-new (get-head @hypermap) node3 node1
+(demo (mm/add-edge (get-head @hypermap) node3 node1
                        {:title "Edge n3->n1" :type :child}))
 (print-head @hypermap)
 

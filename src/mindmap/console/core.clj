@@ -15,26 +15,26 @@
 (defrecord Appinfo  [context uis input])
 
 (defn new-appinfo  []
-    (new Appinfo
-       (new Context)
-       [(->UI :header) (->UI :start) 
-       ; (->UI :cmdline)
-        ]
-       nil))
+    (map->Appinfo {:context nil
+                   :uis [(->UI :navigate)]
+                   :input nil
+                   }))
 
 ; Main ------------------------------------------------------------------------
 ;
 (defn run-app  [appinfo screen]
     (loop  [{:keys  [input uis] :as appinfo} appinfo]
-          (when-not  (empty? uis)
-            (draw-app appinfo screen)
-            (if  (nil? input)
-              (recur  (get-input appinfo screen))
-              ;
-              ; TODO 
-              ; Input buffering for command history will need to be 
-              ; gotten from here 
-              (recur  (process-input  (dissoc appinfo :input) input))))))
+      (when (seq uis)
+        (recur (if input
+                 (-> appinfo
+                     (dissoc :input)
+                     (process-input input))
+                 (-> appinfo
+                     ; This is where each item renders its
+                     ; behaviour
+                     ; (update-in [:context] tick-all )
+                     (draw-app screen)
+                     (get-input screen))))))) 
 
 (defn main
     ([screen-type]  (main screen-type false))
@@ -42,7 +42,7 @@
       (letfn  [(go  []
          (let  [screen  (create-screen screen-type)]
             (s/in-screen screen
-            (run-app  (new-appinfo) screen))))]
+              (run-app  (new-appinfo) screen))))]
                (if block?
                 (go)
                 (future (go))))))

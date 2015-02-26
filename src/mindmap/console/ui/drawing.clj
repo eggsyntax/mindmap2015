@@ -13,7 +13,6 @@
 
 (defn create-screen 
   [screen-type]
-  (println "create-screen> type: " screen-type)
   (let [screen (s/get-screen screen-type {:resize-listener handle-resize})
         cur-size (s/get-size screen)
         [cols rows] cur-size]
@@ -46,6 +45,23 @@
       (s/put-string screen pad 1 txt {:fg :green})
     ))
 
+(defn draw-cmdline 
+  [appinfo screen msg]
+  (let [[width height] @screen-size
+        pos (- height 1)
+       cur-pos (+ (count msg) 2)
+       ]
+    (s/put-string screen 0 pos ">" {:fg :green})
+    (s/put-string screen 2 pos msg)
+    (s/move-cursor screen 0 pos)))
+
+(defn draw-node
+  [appinfo screen]
+  (let []
+    ()
+   )
+  )
+
 ; UI Handlers ----------------------------------------------------------------
 ;
 (defmulti draw-ui
@@ -55,31 +71,24 @@
 (defmethod draw-ui [] [ui appinfo screen]
   ())
 
-(defmethod draw-ui :header [ui appinfo screen]
-  (draw-header screen))
-
-; TODO This will become pretty sofisticated eventually
-;
-; o It will need to reflect the current command being typed in
-; o It would be nice for the background color to be a strip
-;   the width of the cursor line
-; 
-(defmethod draw-ui :cmdline [ui appinfo screen]
-  (let [[height] @screen-size
-        pos (- height 1) ]
-    (println ":cmdline > height=" height " pos=" pos)
-    ; 
-    (s/put-string screen 0 pos ">" {:fg :green})
-    (s/move-cursor screen 1 pos)))
-
-(defmethod draw-ui :start [ui appinfo screen]
-  (s/put-string screen 10 5 "Press enter to win, anything else to lose" ))
+(defmethod draw-ui :navigate [ui appinfo screen]
+  (draw-header screen)
+  (s/put-string screen 10 5 "Press enter to win, anything else to lose" )
+  (draw-cmdline appinfo screen "Navigation Mode")
+  )
 
 (defmethod draw-ui :win [ui appinfo screen]
-  (s/put-string screen 10 5 "Win Mode: press escape to exit anything else to restart"))
+  (draw-header screen)
+  (s/put-string screen 10 5 "Win Mode: press escape to exit anything else to restart")
+  (draw-cmdline appinfo screen "Win Mode")
+
+  )
 
 (defmethod draw-ui :lose [ui appinfo screen]
-  (s/put-string screen 10 5 "Lose input: press escape to exit anything else to go"))
+  (draw-header screen)
+  (s/put-string screen 10 5 "Lose input: press escape to exit anything else to go")
+  (draw-cmdline appinfo screen "Lose Mode")
+  )
 
 (defn draw-app [appinfo screen]
   (clear-screen screen)

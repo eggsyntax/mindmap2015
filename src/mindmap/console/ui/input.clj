@@ -7,40 +7,25 @@
   (fn [appinfo input]
     (:kind (last (:uis appinfo)))))
 
-; TODO
-; 
-;  Write a function that takes a seq 
-; and inserts the keyword names into 
-; the UI format
-;
-(defn wrap-cmd
-  [cmd]
-  [(->UI :header)
-   (->UI cmd)
-   ;(->UI :cmdline) 
-   ])
-
 (defmethod process-input [] [appinfo input]
   ())
 
-(defmethod process-input :start [appinfo input]
+(defmethod process-input :navigate [appinfo input]
   (if (= input :enter)
-    (assoc appinfo :uis (wrap-cmd :win))
-    (assoc appinfo :uis (wrap-cmd :lose))))
+    (do 
+      (assoc appinfo :uis [(->UI :win)]))
+    (assoc appinfo :uis [(->UI :lose)])))
 
 (defmethod process-input :win [appinfo input]
   (if (= input :escape)
     (assoc appinfo :uis [(->UI [])])
-    (assoc appinfo :uis (wrap-cmd :start))))
+    (assoc appinfo :uis [(->UI :navigate)])))
 
 (defmethod process-input :lose [appinfo input]
   (if (= input :escape)
     (assoc appinfo :uis [(->UI [])])
-    (assoc appinfo :uis (wrap-cmd :start))))
+    (assoc appinfo :uis [(->UI :navigate)])))
 
-; 
 (defn get-input [appinfo screen]
   (let [input (s/get-key-blocking screen)]
-    (println "get-input> " input)
-    (assoc appinfo :input input)
-    ))
+    (assoc appinfo :input input)))

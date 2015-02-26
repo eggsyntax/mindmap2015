@@ -135,8 +135,7 @@
         (assoc :cur-pointer (:id node)))))
 
 ; (defn add-edge
-;   "Add an edge to a mindmap between two nodes.
-;   Its unidirectional connecting two nodes through an edge.
+;   "Add a directional edge to a mindmap between two nodes.
 ;   Return modified mindmap."
 ;   [mm origin dest attributes]
 ;   (let [edge (create-edge {:id origin} {:id dest} attributes)

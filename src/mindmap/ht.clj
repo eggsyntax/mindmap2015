@@ -81,6 +81,18 @@
   [hyper node]
   (mm/node-and-children (get-head hyper) node))
 
+;TODO ganked this from a dead branch -- should work, but test it
+; (defn parent-of
+;   "Returns the single node which is the parent of this node."
+;   [hyper node]
+;   (let [possible-parents (edges-to hyper node)
+;         is-parental #(= (:type %) :child)
+;         parents (filter is-parental possible-parents)]
+;     (assert (= (count parents) 1)
+;             (str "This freaky node has too many parents. " node ":\n\t" parents))
+;     parents))
+
+
 ; Note: This will need to become aware of the l/r nature
 ;       of the current branch when we adding branching
 ;
@@ -95,11 +107,11 @@
       ; zip up, insert a new vector with the new node, traverse down to it
       ;
       (-> hyper
-        (assoc 
+        (assoc
              :nodes
-             (-> zipper 
-                  (zip/up) 
-                  (zip/insert-child [new-node]) 
+             (-> zipper
+                  (zip/up)
+                  (zip/insert-child [new-node])
                   (zip/down)
                   (zip/down)))
           (assoc :head-pointer (:id new-node)))))

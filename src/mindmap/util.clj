@@ -29,7 +29,6 @@
     (main-indexer)
     (hash item)))
 
-;TODO - Sit down w/ G and work out how this will interact with our defrecords.
 (defn with-id
   "Wrapper around any function that returns a maplike object, which adds
   an :id field containing the hash of the object. Exists so that it's easy

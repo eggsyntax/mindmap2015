@@ -62,7 +62,6 @@
   (for [id ids]
     (get-edge mm id)))
 
-;TODO needs test
 (defn edges-between
   [mm origin dest]
   (filter
@@ -71,7 +70,6 @@
        (= (:dest-id %) (:id dest)))
     (:edges mm)))
 
-;TODO needs test
 ; NOTE This needs to remain public for the unit test to be able to see it
 (defn filter-edges-by
   "Returns a seq of edges whose specified key-property

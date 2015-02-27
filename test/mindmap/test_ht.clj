@@ -23,8 +23,9 @@
         n1 (get-cur @hyper)
         _ (swap! hyper add-node {:title "Node 2"} {:title "Tree 1"})
         n2 (get-cur @hyper)
-        _ (swap! hyper add-edge n1 n2 {:title "Edge 1"} {:title "Tree 1"})
-        ]
+        _ (swap! hyper add-edge n1 n2
+                 {:title "Edge 1" :type :child}
+                 {:title "Tree 1"})]
       (is (= 1 (count (edges-between @hyper n1 n2))))
       (is (= "Edge 1" (:title (first (edges-between @hyper n1 n2)))))
     )

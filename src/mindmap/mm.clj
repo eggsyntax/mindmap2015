@@ -90,15 +90,15 @@
       (map #(get-edge mm (:id %)) child-rels)))
 
 (defn child-nodes
-  "Returns a seq of all children node Entities of this node"
+  "Returns a seq of all nodes to which this node has edges "
   [mm node]
-  (let [child-rels (filter-edges-by mm :origin-id node)]
+  (let [child-rels (edges-from mm node)]
     (map #(get-node mm (:dest-id %)) child-rels)))
 
 (defn parent-nodes
-  "Returns a seq of all parent node Entities of this node"
+  "Returns a seq of all nodes which have edges to this node"
   [mm node]
-  (let [par-rels (filter-edges-by mm :dest-id node)]
+  (let [par-rels (edges-to mm node)]
     (map #(get-node mm (:origin-id %)) par-rels)))
 
 (defn set-cur
@@ -142,7 +142,7 @@
     (assoc mm :edges updated-edges)))
 
 (defn add-new-node-from
-  "Add a new node as the child of the parent node making the child the current node."
+  "Add a new node as the child of the parent node making the child the current node. Return modified mindmap."
   [mm parent node-attrs edge-attrs]
   (let [new-map (add-node mm node-attrs)
         new-node (get-cur new-map) ]
@@ -198,10 +198,44 @@
     )
   ))
 
+(defn remove-node-and-children
+  [mm node]
+  (let [children (node-and-children mm node) ]
+    (reduce remove-node mm children)
+  ))
 
- (defn remove-node-and-children
-   [mm node]
-   (let [children (node-and-children mm node) ]
-     (reduce remove-node mm children)
-   ))
+(defn rand-mm
+  "Convenience function to generate a random mindmap.
+  Optional arguments:
+    :num-nodes        - Size of the mindmap (default 4)
+    :seed             - for the RNG (default 255, or -1 to randomize)
+    :num-extra-links  - number of non-child links to add"
+  [& {:keys [num-nodes seed num-extra-links]
+      :or {num-nodes 10, seed 255, num-extra-links 0}}]
+  (let [new-map (default-mindmap)
+        new-node-attrs (fn [v] {:title (str "Node " (+ 2 v))})
+        new-edge-attrs (fn [v] {:title (str "Edge " (+ 1 v)) :type :child})
+        rng (ut/seeded-rng seed)
+        some-node (fn [mm]
+                    (if (empty? (:nodes mm))
+                      nil
+                      (nth (vals (:nodes mm))
+                           (.nextInt rng (count (:nodes mm))))))
+        add-a-node (fn [mm i]
+                     (add-new-node-from
+                       mm
+                       (some-node mm)
+                       (new-node-attrs i)
+                       (new-edge-attrs i)))
+        add-extra-edge (fn [mm i]
+                         (add-edge
+                           mm
+                           (some-node mm)
+                           (some-node mm)
+                           {:title (str "Extra Edge " (+ 1 i)) :type :extra}))
+        main-map (reduce add-a-node new-map (range num-nodes))
+        ]
+    ; Add extra edges if requested
+    (reduce add-extra-edge main-map (range num-extra-links))))
 
+(ut/ppprint (rand-mm :num-nodes 3 :num-extra-links 1))

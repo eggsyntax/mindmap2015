@@ -2,7 +2,8 @@
   (:use [clojure.pprint :only (pprint)])
   (:require [clojure.tools.namespace.repl :as nsrepl]
             [clojure.zip :as zip])
-  (:import [java.io StringWriter]))
+  (:import [java.io StringWriter]
+           [java.util Random]))
 
 (def debug-mode (atom false)) ; rebind this in the REPL or wherever as desired
 
@@ -81,11 +82,13 @@
 (spaces 5)
 
 (defmacro demo
-  "demo macro just prints itself and its results to console"
+  "demo macro just prints itself and its results to console, and returns the results."
   [form]
   (println "***" form "***")
   (println)
-  (ppprint (eval form)))
+  (let [results (eval form)]
+    (ppprint results)
+    results))
 
 (defn no-nils? [coll]
   (every? #(not (nil? %)) coll))
@@ -111,4 +114,13 @@
     (let [[cur-filter & remaining-filters] filter-list
           filtered-coll (filter cur-filter coll)]
       (apply-filters remaining-filters filtered-coll))))
+
+(defn seeded-rng
+  "Returns a random number generator with the given seed. By convention,
+  passing a seed of -1 returns a different-seeded RNG every time."
+  [seed]
+  (let [rng-seed (if (= seed -1)
+                   (rand-int Integer/MAX_VALUE)
+                   seed)]
+   (Random. rng-seed)))
 

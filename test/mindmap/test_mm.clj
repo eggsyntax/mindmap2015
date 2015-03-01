@@ -59,6 +59,14 @@
         _ (swap! mmap add-new-node-from n1 {:title "Node 3"} {:title "Edge 2"})]
       (is (= 2 (count (child-nodes @mmap n1))))))
 
+(deftest test-parent-nodes
+  (let [[mmap n1 n2] (make-map)
+        _ (println (str "parent-nodes:"(parent-nodes @mmap n2)))
+        parents-of-n2 (parent-nodes @mmap n2)
+        parent-of-n2 (first parents-of-n2)]
+    (is (= 1 (count parents-of-n2)))
+    (is (= n1 parent-of-n2))))
+
 (deftest test-node-and-children
   (let [mmap (atom (default-mindmap))
         n1 (get-cur @mmap)

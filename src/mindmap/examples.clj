@@ -67,6 +67,7 @@
                        {:title "Edge n3->n1" :type :child}))
 (print-head @hypermap)
 
+
 ; Returns two edges
 (demo (edges-from @hypermap node2))
 ; Returns 1 edge of those 2, the one that's a child.

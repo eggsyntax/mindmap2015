@@ -7,6 +7,7 @@
 (defrecord Edge [origin-id dest-id id])
 
 ; Schema this:      val map   set       val
+; NOTE! Make sure edges are a set -- easy to screw up :P
 (defrecord Mindmap [nodes edges cur-pointer])
 
 (defn- merge-with-timestamp-and-id
@@ -206,12 +207,13 @@
 
 (defn rand-mm
   "Convenience function to generate a random mindmap.
+  WARNING: does not create acyclic graphs. TODO
   Optional arguments:
     :num-nodes        - Size of the mindmap (default 4)
     :seed             - for the RNG (default 255, or -1 to randomize)
     :num-extra-links  - number of non-child links to add"
   [& {:keys [num-nodes seed num-extra-links]
-      :or {num-nodes 10, seed 255, num-extra-links 0}}]
+      :or {num-nodes 4, seed -1, num-extra-links 0}}]
   (let [new-map (default-mindmap)
         new-node-attrs (fn [v] {:title (str "Node " (+ 2 v))})
         new-edge-attrs (fn [v] {:title (str "Edge " (+ 1 v)) :type :child})
@@ -239,3 +241,5 @@
     (reduce add-extra-edge main-map (range num-extra-links))))
 
 (ut/ppprint (rand-mm :num-nodes 3 :num-extra-links 1))
+(def r1 (rand-mm :num-nodes 6 :num-extra-links 1))
+(nth (vals (:nodes r1)) 3)

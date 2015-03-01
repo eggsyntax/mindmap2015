@@ -25,4 +25,6 @@
           (is (= cur (parent-of new-mmap new-cur)))
           (recur new-mmap (- i 1)))))))
 
+(ut/ppprint (mm/rand-mm :num-nodes 3))
+
 (run-tests 'mindmap.test-as-tree)

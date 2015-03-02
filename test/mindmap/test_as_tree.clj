@@ -25,6 +25,19 @@
           (is (= cur (parent-of new-mmap new-cur)))
           (recur new-mmap (- i 1)))))))
 
+(deftest test-as-tree
+  (let [mm (mm/rand-mm)
+        root (last (vals (:nodes mm)))
+        ]
+    (ut/ppprint root)
+    (ut/ppprint (as-tree mm root 5))
+    )
+  )
+(test-as-tree)
+
+(def rmm2 (mm/rand-mm))
+
 (ut/ppprint (mm/rand-mm :num-nodes 3))
 
 (run-tests 'mindmap.test-as-tree)
+

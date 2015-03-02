@@ -4,20 +4,6 @@
 
 "Functions for returning tree views of mindmaps"
 
-(defn parent-of
-  "Returns the single node which is the parent of this node (ie via
-  a link of type :child)."
-  [mm node]
-  (let [possible-parents (edges-to mm node)
-        is-parental #(= (:type %) :child)
-        parent-edges (filter is-parental possible-parents)
-        parents (map #(get (:nodes mm) (:origin-id %)) parent-edges)]
-    (assert (> (count parents) 0)
-            (str "This node has no parent. " node))
-    (assert (< (count parents) 2)
-            (str "This freaky node has too many parents. " node ":\n\t" parents))
-    (first parents)))
-
 (defn make-node-edge-map
   "Return a map from node to (edges). Allows fast downward navigation. Runs
   in O(E) with E the number of edges."
@@ -30,20 +16,49 @@
 (ut/demo (def rmm (rand-mm :num-nodes 8 :seed -1)))
 (ut/ppprint (make-node-edge-map rmm))
 
-(defn subtree
-  "Return the subtree whose root is 'node', to a depth of 'depth'. Pass depth
-  of nil to return entire tree. Throws error if resulting subtree would contain
-  circularity."
-  ; Use set of visited nodes to detect circularity
-  [mm node depth]
-  (let [edges (:edges mm)
-        init-tree '(node)
-        node-edge-map (make-node-edge-map mm)
-        ]
-    (loop [tree init-tree
-           levels depth
-           visited #{}
-           cur node
-           ]
-      ;
-      )))
+(defn- edges-from-map [node-edge-map node]
+  (get node-edge-map (:id node)))
+
+(defn- nodes-from-map [mm node-edge-map node]
+   (let [node-from-edge (fn [edge] (get (:nodes mm) (:dest-id edge)))]
+      (map node-from-edge (edges-from-map node-edge-map node))))
+
+(defn as-tree
+  "Return the tree whose root is 'node', to a depth of 'depth'. Pass depth
+  of nil to return entire tree."
+  ([mm node depth]
+   (let [node-edge-map (make-node-edge-map mm)]
+     (as-tree mm node depth node-edge-map)))
+
+  ([mm node depth node-edge-map]
+   (println "depth: " depth)
+   (cons node
+         (if (> depth 0)
+           (for [cur (nodes-from-map mm node-edge-map node)]
+             (if (empty? (edges-from-map node-edge-map cur))
+               (list cur)
+                ;TODO implement levels
+               (let [retval (as-tree mm cur (- depth 1) node-edge-map)]
+                 retval)))
+           nil))))
+
+(ut/demo (def rmm (rand-mm :num-nodes 300 :seed 3)))
+(def n-e-m (make-node-edge-map rmm))
+(ut/ppprint n-e-m)
+(def root (last (vals (:nodes rmm))))
+(ut/ppprint root)
+(count (:nodes rmm))
+(ut/ppprint (edges-from-map n-e-m root))
+(ut/ppprint (nodes-from-map rmm n-e-m root))
+(ut/ppprint root)
+(get n-e-m 7239)
+(def cur (get (:nodes rmm) 7239))
+(ut/ppprint cur)
+(ut/ppprint (as-tree rmm cur 10))
+
+(let [mm (rand-mm)
+      cur (get-cur mm)]
+  (get-root mm cur)
+  )
+
+

@@ -3,29 +3,40 @@
   (:import [mindmap.console.ui.core UI])
   (:require [lanterna.screen :as s]))
 
-(defmulti process-input 
-  (fn [appinfo input]
-    (:kind (last (:uis appinfo)))))
+(defmulti process-input :mode)
 
-(defmethod process-input [] [appinfo input]
-  ())
+(defmethod process-input :default 
+  [context input] 
+  ; push the exit mode
+  (assoc context :mode :exit))
 
-(defmethod process-input :navigate [appinfo input]
+(defmethod process-input :navigate 
+  [context input]
   (if (= input :enter)
     (do 
-      (assoc appinfo :uis [(->UI :win)]))
-    (assoc appinfo :uis [(->UI :lose)])))
+      (assoc context :uis [(->UI :win)])
+      )
+    (assoc context :uis [(->UI :lose)])))
 
-(defmethod process-input :win [appinfo input]
-  (if (= input :escape)
-    (assoc appinfo :uis [(->UI [])])
-    (assoc appinfo :uis [(->UI :navigate)])))
+; TODO If there is no direct mapping 
+; then buffer the input for later
+;
+;  o If there is an existing input buffer
+;    first check that the new input value
+;    combined with the buffer triggers 
+;    and action
+; 
+;   i.e: Edit 
+(defmethod process-input :add-node
+  [context input]
+  (
+   ))
 
-(defmethod process-input :lose [appinfo input]
-  (if (= input :escape)
-    (assoc appinfo :uis [(->UI [])])
-    (assoc appinfo :uis [(->UI :navigate)])))
-
-(defn get-input [appinfo screen]
+(defn get-input [context screen]
   (let [input (s/get-key-blocking screen)]
-    (assoc appinfo :input input)))
+    ;
+    ; TODO 
+    ; Only one character at a time. Specific input handler 
+    ; uses the buffer to make complex interactions
+    ; 
+    (assoc (:input context) input)))

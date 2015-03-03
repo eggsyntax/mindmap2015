@@ -1,9 +1,16 @@
 (ns mindmap.console.ui.drawing
+;  (:require [mindmap.ht :as ht])
   (:require [lanterna.screen :as s]))
 
 ; Utility Functions -----------------------------------------------------------
 ;
 (def screen-size (ref [80 24]))
+
+; Padding for the Header
+;(def top-pad 2)
+
+; Padding for the command-line
+;(def bottom-pad 2)
 
 ; TODO buffer the last UI stack that was draw and re-render
 ;
@@ -19,12 +26,6 @@
     (handle-resize cols rows)
     screen))
 
-(defn clear-screen  [screen]
-    (let [[cols rows] @screen-size
-          blank  (apply str  (repeat cols \space))]
-      (doseq [row  (range rows)]
-         (s/put-string screen 0 row blank))))
-
 ; This could be generalized by type of padding required
 ;
 ; i.e. height-centered vs width-centered, alignment
@@ -36,64 +37,122 @@
     ; Round up to the nearest cell
     (Math/round (float (/ diff 2)))))
 
-; Drawing Functions -----------------------------------------------------------
-;
-(defn draw-header [screen]
-  (let [txt "Hypertree Console 0.1"
-        pad (get-center-pad txt)
-        ]
-      (s/put-string screen pad 1 txt {:fg :green})
+(defn draw-cmdline 
+  [context screen msg]
+  (let [[width height] @screen-size
+        h (- height 1)
+        wx (+ (count msg) 2) ]
+    (s/put-string screen 0 h ">" {:fg :green})
+    (s/put-string screen 2 h msg)
+    (s/move-cursor screen wx h)))
+
+; Truncates the string down to the max-chars
+; with an elipsis 
+(defn truncate-str
+  [string max-chars]
+  (let [no-el-width (- max-chars 3)]
+    (if (<= (count string) no-el-width)
+      string 
+      (let [tr-str (subs string 0 no-el-width)]
+        (str tr-str "...")))
     ))
 
-(defn draw-cmdline 
-  [appinfo screen msg]
-  (let [[width height] @screen-size
-        pos (- height 1)
-       cur-pos (+ (count msg) 2)
-       ]
-    (s/put-string screen 0 pos ">" {:fg :green})
-    (s/put-string screen 2 pos msg)
-    (s/move-cursor screen 0 pos)))
+; Each node has a fixed size with the following format:
+;
+;  [Title...]  (12 Chars)
+;
+; The head of the mindmap is green
+; 
+; TODO By Convention use :title for now
+;      eventually it would be great for this 
+;      to be smarter about displaying attributes
+;
+;[def max-node-width 12]
+(defn draw-tree-node
+  [node x y screen]
+  (let [title (:title node)
+        t-title (truncate-str title 12) ]
+    (s/put-string screen x y (str "[" t-title "]"))))
 
-(defn draw-node
-  [appinfo screen]
-  (let []
-    ()
-   )
-  )
+; Tree View 
+;
+; Calculate how many nodes can fit on the screen
+;
+;  Height = 1 char plus vertical padding
+;  Width = 12 char plus horizontal padding
+;  
+; NOTES:
+;
+;  This should fit as much of the map and children
+;  on the screen as possible...
+;
+;  General Example:
+;
+;[Node -1   ] 
+;             \
+;[Node 0    ]  \
+;             \ \
+;[Node 1    ]  \ \               [Node B     ]
+;             \ \ \            /  
+;[Node 2    ] -- [Node 3    ] -- [Node A     ]
+;             / / /            \
+;[Node 5    ]  / /               [Node C     ] 
+;             / /
+;[Node 6    ]  /
+;             /
+;[Node 7    ]
+
+;  List View
+; 
+;Node 00
+;  Node 10
+;    Node 20
+;    Node 21
+;      Node 30
+;  Node 20
+;    Node 22
+;    Node 23
+;
+
 
 ; UI Handlers ----------------------------------------------------------------
 ;
-(defmulti draw-ui
-  (fn [ui appinfo screen]
-    (:kind ui)))
+(defmulti draw-ui :action)
 
-(defmethod draw-ui [] [ui appinfo screen]
+; This is great but should end up being mapped to actual drawing tasks
+; like :tree-view/:list-view, :edit, :inspect, etc.
+;
+;  NOTE: Each drawing command (like :edit) can also prompt for 
+;        task-specific input from the user during its rendering
+; 
+(defmethod draw-ui :default 
+  [ui context screen]
   ())
 
-(defmethod draw-ui :navigate [ui appinfo screen]
-  (draw-header screen)
-  (s/put-string screen 10 5 "Press enter to win, anything else to lose" )
-  (draw-cmdline appinfo screen "Navigation Mode")
+(defmethod draw-ui :navigate 
+  [ui context screen]
+  (s/put-string screen 10 5 "Press enter to win, anything else to lose" ))
+
+(defmethod draw-ui :header 
+  [ui context screen]
+  (let [txt "Hypertree Console 0.1"
+        pad (get-center-pad txt) ]
+      (s/put-string screen pad 1 txt {:fg :green})))
+
+(defmethod draw-ui :cmd-line-inspect-node 
+  [ui context screen]
+  ; Pull Out Node Title for display
   )
 
-(defmethod draw-ui :win [ui appinfo screen]
-  (draw-header screen)
-  (s/put-string screen 10 5 "Win Mode: press escape to exit anything else to restart")
-  (draw-cmdline appinfo screen "Win Mode")
-
+(defmethod draw-ui :cmd-line-editing 
+  [ui context screen]
+  ; Pull Out current input buffer for display
   )
 
-(defmethod draw-ui :lose [ui appinfo screen]
-  (draw-header screen)
-  (s/put-string screen 10 5 "Lose input: press escape to exit anything else to go")
-  (draw-cmdline appinfo screen "Lose Mode")
-  )
-
-(defn draw-app [appinfo screen]
-  (clear-screen screen)
-  (doseq [ui (:uis appinfo)]
-    (draw-ui ui appinfo screen))
-  (s/redraw screen)
-  appinfo)
+(defn draw-app [context screen]
+  (s/clear screen)
+  (doseq [ui (:uis context)]
+    (println "draw-app> Drawing " ui)
+    (draw-ui ui context screen))
+  (s/redraw screen))
 

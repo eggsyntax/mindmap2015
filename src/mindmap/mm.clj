@@ -219,10 +219,18 @@
             (str "This freaky node has too many parents. " node ":\n\t" parents))
     (first parents)))
 
-;TODO parent-of throws exception at root
+(defn parent-if-exists
+  "Try returning parent, but if parent-of throws an exception, just return nil.
+  Useful for recursive searches which will eventually hit the root node."
+  [mm node]
+  (try
+    (parent-of mm node)
+    (catch AssertionError e
+      nil)))
+
 (defn get-root [mm node]
   (loop [cur node]
-    (let [cur-parent (parent-of mm cur)]
+    (let [cur-parent (parent-if-exists mm cur)]
       (if cur-parent
         (recur cur-parent)
         cur))))

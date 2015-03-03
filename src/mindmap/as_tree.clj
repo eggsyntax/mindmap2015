@@ -27,6 +27,9 @@
   "Return the tree whose root is 'node', to a depth of 'depth'. Pass depth
   of nil to return entire tree."
   ([mm node depth]
+   ;TODO - ultimately after doing all this, we should scan for unhandled nodes
+   ;  in case of disjoint trees.
+   ;TODO - but y'know, why would rand-mm ever create disjoint trees? Possibly worrying.
    (let [node-edge-map (make-node-edge-map mm)]
      (as-tree mm node depth node-edge-map)))
 
@@ -37,28 +40,27 @@
            (for [cur (nodes-from-map mm node-edge-map node)]
              (if (empty? (edges-from-map node-edge-map cur))
                (list cur)
-                ;TODO implement levels
                (let [retval (as-tree mm cur (- depth 1) node-edge-map)]
                  retval)))
            nil))))
 
-(ut/demo (def rmm (rand-mm :num-nodes 300 :seed 3)))
-(def n-e-m (make-node-edge-map rmm))
-(ut/ppprint n-e-m)
-(def root (last (vals (:nodes rmm))))
-(ut/ppprint root)
-(count (:nodes rmm))
-(ut/ppprint (edges-from-map n-e-m root))
-(ut/ppprint (nodes-from-map rmm n-e-m root))
-(ut/ppprint root)
-(get n-e-m 7239)
-(def cur (get (:nodes rmm) 7239))
-(ut/ppprint cur)
-(ut/ppprint (as-tree rmm cur 10))
+(ut/demo (def rmm (rand-mm :num-nodes 30 :seed 3)))
+; (def n-e-m (make-node-edge-map rmm))
+; (ut/ppprint n-e-m)
+(def root (parent-if-exists rmm (last (vals (:nodes rmm)))))
+(def root (parent-if-exists rmm (get-cur rmm)))
+; (ut/ppprint root)
+; (count (:nodes rmm))
+; (ut/ppprint (edges-from-map n-e-m root))
+; (ut/ppprint (nodes-from-map rmm n-e-m root))
+; (ut/ppprint root)
+; (get n-e-m 7239)
+; (def cur (get (:nodes rmm) 7239))
+; (ut/ppprint cur)
+(ut/ppprint (as-tree rmm root 100))
 
 (let [mm (rand-mm)
       cur (get-cur mm)]
-  (get-root mm cur)
-  )
+  (get-root mm cur))
 
 

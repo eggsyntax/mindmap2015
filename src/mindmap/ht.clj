@@ -23,19 +23,31 @@
 (defrecord Node [id mm attrs])
 (defrecord Hypertree [nodes head-pointer])
 
-(defn default-hypertree
-  []
-  (let [first-mindmap (mm/default-mindmap)
-        node-no-id (Node. nil first-mindmap {})
-        first-node (ut/with-id node-no-id)
+
+(defn- hypertree-from-mindmap
+  [first-mm]
+  (let [node-no-id (Node. nil first-mm {})
+        first-node (ut/with-id node-no-id) 
         tree-coll [first-node]
-        ht (Hypertree.
+        ht (Hypertree. 
              (zip/vector-zip tree-coll)
              (:id first-node)) ]
       ; Move the zipper to point to the first node
-      (assoc ht :nodes (zip/down (:nodes ht)))
-      ;(swap! (:nodes ht) zip/down)
-    ))
+      (assoc ht :nodes (zip/down (:nodes ht)))))
+
+(defn default-hypertree [] 
+  (hypertree-from-mindmap (mm/default-mindmap)))
+
+(defn rand-hypertree
+ "Convenience function to generate a random mindmap.
+  Optional arguments:
+    :num-nodes        - Size of the mindmap  (default 4)
+    :seed             - for the RNG (default 255, or -1 to randomize)
+    :num-extra-links  - number of non-child links to add" 
+  [& {:keys [num-nodes seed num-extra-links]
+      :or   {num-nodes 10, seed 255, num-extra-links 0}}]
+  (let [first-mm (mm/rand-mm num-nodes seed num-extra-links)]
+    (hypertree-from-mindmap first-mm)))
 
 (defn get-head
   "Get the mindmap which is the current head of the hypertree"

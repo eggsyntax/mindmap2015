@@ -8,4 +8,5 @@
                       (args ":swing") :swing
                       (args ":text")  :text
                       :else           :auto) ]
-      (console/main screen-type true)))
+      (console/main screen-type true)
+      ))

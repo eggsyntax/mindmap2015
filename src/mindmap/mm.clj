@@ -205,9 +205,43 @@
     (reduce remove-node mm children)
   ))
 
+(defn parent-of
+  "Returns the single node which is the parent of this node (ie via
+  a link of type :child)."
+  [mm node]
+  (let [possible-parents (edges-to mm node)
+        is-parental #(= (:type %) :child)
+        parent-edges (filter is-parental possible-parents)
+        parents (map #(get (:nodes mm) (:origin-id %)) parent-edges)]
+    (assert (> (count parents) 0)
+            (str "This node has no parent. " node))
+    (assert (< (count parents) 2)
+            (str "This freaky node has too many parents. " node ":\n\t" parents))
+    (first parents)))
+
+(defn parent-if-exists
+  "Try returning parent, but if parent-of throws an exception, just return nil.
+  Useful for recursive searches which will eventually hit the root node."
+  [mm node]
+  (try
+    (parent-of mm node)
+    (catch AssertionError e
+      nil)))
+
+(defn get-root [mm node]
+  (loop [cur node]
+    (let [cur-parent (parent-if-exists mm cur)]
+      (if cur-parent
+        (recur cur-parent)
+        cur))))
+
 (defn rand-mm
   "Convenience function to generate a random mindmap.
+
   WARNING: does not create acyclic graphs. TODO
+  TODO now that I think about it, I think it actually does create acyclic graphs.
+  But think it through a bit more.
+
   Optional arguments:
     :num-nodes        - Size of the mindmap (default 4)
     :seed             - for the RNG (default 255, or -1 to randomize)
@@ -235,7 +269,7 @@
                            (some-node mm)
                            (some-node mm)
                            {:title (str "Extra Edge " (+ 1 i)) :type :extra}))
-        main-map (reduce add-a-node new-map (range num-nodes))
+        main-map (reduce add-a-node new-map (range (- num-nodes 1)))
         ]
     ; Add extra edges if requested
     (reduce add-extra-edge main-map (range num-extra-links))))

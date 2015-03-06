@@ -231,6 +231,8 @@
 (defn get-root [mm node]
   (loop [cur node]
     (let [cur-parent (parent-if-exists mm cur)]
+      (ut/ppprint (str "cur:" (:id cur)))
+      (ut/ppprint (str "cur-parent:" (:id cur-parent)))
       (if cur-parent
         (recur cur-parent)
         cur))))

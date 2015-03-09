@@ -8,15 +8,16 @@
 
 ; Data Structures -------------------------------------------------------------
 ;
-(defrecord Context  [mode style hyper uis input input-buffer])
+(defrecord Context  [screen mode style hyper uis input input-buffer])
 
-(defn new-context  []
-    (map->Context {:mode :navigate
+(defn new-context  [screen]
+    (map->Context {:screen screen
+                   :mode :navigate
                    :style :list
-                   :hyper (ht/rand-hypertree)
+                   :hyper nil ; (ht/rand-hypertree)
                    :uis [(->UI :header)
-                         (->UI :map)
-                         (->UI :cmd-line)]
+                         (->UI :vis-hyper)
+                         (->UI :cmd-line-inspect-node)]
                    :input nil
                    :input-buffer []
                    }))
@@ -38,13 +39,14 @@
 ; o the :exit mode is special and will exit the application
 ;
 (defn run-app
-  [start-context screen]
-  (loop [{:keys [mode style hyper uis input input-buffer] :as context} start-context] 
-    (when (not= :exit mode)
+  [start-context]
+  (loop [{:keys [screen mode style hyper uis input input-buffer] :as context} start-context] 
+      (when (not= :exit mode)
         (if (nil? input)
           (do 
-            (draw-app context screen ) ; Pure function 
-            (recur (get-input context screen)))
+            (draw-app context) ; Pure function 
+            (let [new-context (dissoc context :uis)]
+              (recur (get-input new-context))))
           (recur (process-input (dissoc context :input) input))))))
 
 (defn main
@@ -53,7 +55,7 @@
       (letfn  [(go  []
          (let  [screen  (create-screen screen-type)]
             (s/in-screen screen
-              (run-app  (new-context) screen))))]
+              (run-app  (new-context screen)))))]
                (if block?
                 (go)
                 (future (go))))))

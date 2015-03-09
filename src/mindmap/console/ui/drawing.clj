@@ -38,8 +38,9 @@
     (Math/round (float (/ diff 2)))))
 
 (defn draw-cmdline 
-  [context screen msg]
-  (let [[width height] @screen-size
+  [context msg]
+  (let [screen (:screen context)
+        [width height] @screen-size
         h (- height 1)
         wx (+ (count msg) 2) ]
     (s/put-string screen 0 h ">" {:fg :green})
@@ -54,25 +55,29 @@
     (if (<= (count string) no-el-width)
       string 
       (let [tr-str (subs string 0 no-el-width)]
-        (str tr-str "...")))
-    ))
+        (str tr-str "...")))))
 
-; Each node has a fixed size with the following format:
-;
-;  [Title...]  (12 Chars)
-;
-; The head of the mindmap is green
+;  List View
 ; 
-; TODO By Convention use :title for now
-;      eventually it would be great for this 
-;      to be smarter about displaying attributes
+;Node 00
+;  Node 10
+;    Node 20
+;    Node 21
+;      Node 30
+;  Node 20
+;    Node 22
+;    Node 23
 ;
-;[def max-node-width 12]
-(defn draw-tree-node
-  [node x y screen]
-  (let [title (:title node)
-        t-title (truncate-str title 12) ]
-    (s/put-string screen x y (str "[" t-title "]"))))
+
+; Fixed-size? 
+(defn draw-list-node
+  [depth h screen]
+    (println "draw-list-node> called") )
+
+(defn draw-list
+  [context]
+  (let [screen (:screen context)]
+    (s/put-string screen 10 5 "DRAW LIST"))) 
 
 ; Tree View 
 ;
@@ -102,17 +107,28 @@
 ;             /
 ;[Node 7    ]
 
-;  List View
-; 
-;Node 00
-;  Node 10
-;    Node 20
-;    Node 21
-;      Node 30
-;  Node 20
-;    Node 22
-;    Node 23
+
+; Each node has a fixed size with the following format:
 ;
+;  [Title...]  (12 Chars)
+;
+; The head of the mindmap is green
+; 
+; TODO By Convention use :title for now
+;      eventually it would be great for this 
+;      to be smarter about displaying attributes
+;
+;[def max-node-width 12]
+(defn draw-tree-node
+  [node x y screen]
+  (let [title (:title node)
+        t-title (truncate-str title 12) ]
+    (s/put-string screen x y (str "[" t-title "]"))))
+
+(defn draw-tree
+  [context]
+  (let [screen (:screen context)]
+    (s/put-string screen 10 5 "DRAW TREE")))
 
 
 ; UI Handlers ----------------------------------------------------------------
@@ -126,33 +142,41 @@
 ;        task-specific input from the user during its rendering
 ; 
 (defmethod draw-ui :default 
-  [ui context screen]
+  [ui context]
   ())
 
-(defmethod draw-ui :navigate 
-  [ui context screen]
-  (s/put-string screen 10 5 "Press enter to win, anything else to lose" ))
+(defmethod draw-ui :vis-hyper
+  [ui context]
+  (let [style (:style context)]
+    (case style
+      :tree (draw-tree context)
+      :list (draw-list context)
+      ) 
+    ))
 
 (defmethod draw-ui :header 
-  [ui context screen]
-  (let [txt "Hypertree Console 0.1"
+  [ui context]
+  (let [screen (:screen context)
+        txt "Hypertree Console 0.1"
         pad (get-center-pad txt) ]
       (s/put-string screen pad 1 txt {:fg :green})))
 
 (defmethod draw-ui :cmd-line-inspect-node 
-  [ui context screen]
+  [ui context]
+  (println "draw-ui> :cmd-line-inspect-node")
   ; Pull Out Node Title for display
   )
 
 (defmethod draw-ui :cmd-line-editing 
-  [ui context screen]
+  [ui context]
   ; Pull Out current input buffer for display
   )
 
-(defn draw-app [context screen]
-  (s/clear screen)
-  (doseq [ui (:uis context)]
-    (println "draw-app> Drawing " ui)
-    (draw-ui ui context screen))
-  (s/redraw screen))
+(defn draw-app [context]
+  (let [screen (:screen context)]
+    (s/clear screen)
+    (doseq [ui (:uis context)]
+      (println "draw-app> Drawing " ui)
+      (draw-ui ui context))
+    (s/redraw screen)))
 

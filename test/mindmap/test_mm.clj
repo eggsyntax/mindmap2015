@@ -112,7 +112,7 @@
     (is (= 1 (count (:edges @mmap))))))
 
  (deftest test-remove-node-and-children
-   (let [mmap n1 n2] (make-map)
+   (let [ [mmap n1 n2] (make-map) ] 
      (ut/ppprint mmap)
      ))
 

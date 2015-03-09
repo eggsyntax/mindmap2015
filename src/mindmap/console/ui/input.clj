@@ -13,11 +13,23 @@
 
 (defmethod process-input :navigate 
   [context input]
-  (if (= input :escape)
-    (assoc context :mode :exit)
+  ; TODO Figure out what q/Q looks like
+  (if (= input \q)
+    (-> context
+      (assoc :uis [(->UI :header)
+    ;               (->UI :vis-hyper)
+                   (->UI :cmd-line-exit-val)])
+      (assoc :mode :exit-validate))
     (assoc context :uis [ (->UI :header)
                           (->UI :vis-hyper)
                           (->UI :cmd-line-inspect-node) ])))
+
+(defmethod process-input :exit-validate
+  [context input]
+  (if (= input \y)
+    (assoc context :mode :exit)
+    ; TODO Consider having a buffer for previous mode and cancel
+    (assoc context :mode :navigate)))
 
 ; TODO If there is no direct mapping 
 ; then buffer the input for later
@@ -32,10 +44,6 @@
   [context input]
   (
     (println "process-input> :add-node input=" input)
-   ; Abort add
-   ; Add-title s/t user-input is reflected on the cmd-line...
-   ;
-   ; 
    ))
 
 (defn get-input [context]

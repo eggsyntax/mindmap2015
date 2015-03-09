@@ -164,6 +164,7 @@
 (defmethod draw-ui :cmd-line-inspect-node 
   [ui context]
   (println "draw-ui> :cmd-line-inspect-node")
+  (draw-cmdline context ":cmd-line-inspect-node...")
   ; Pull Out Node Title for display
   )
 
@@ -171,6 +172,10 @@
   [ui context]
   ; Pull Out current input buffer for display
   )
+
+(defmethod draw-ui :cmd-line-exit-val 
+  [ui context]
+  (draw-cmdline context "Do you want to exit y/n?"))
 
 (defn draw-app [context]
   (let [screen (:screen context)]

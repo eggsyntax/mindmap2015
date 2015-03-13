@@ -84,11 +84,13 @@
 (defmacro demo
   "demo macro just prints itself and its results to console, and returns the results."
   [form]
+  (println)
   (println "***" form "***")
   (println)
   (let [results (eval form)]
     (ppprint results)
-    results))
+    (println)
+    form)) ; Return the unevaluated form
 
 (defn no-nils? [coll]
   (every? #(not (nil? %)) coll))

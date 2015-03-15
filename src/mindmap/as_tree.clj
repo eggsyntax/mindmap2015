@@ -44,23 +44,8 @@
                  retval)))
            nil))))
 
-(ut/demo (def rmm (rand-mm :num-nodes 30 :seed 3)))
-; (def n-e-m (make-node-edge-map rmm))
-; (ut/ppprint n-e-m)
-(def root (parent-if-exists rmm (last (vals (:nodes rmm)))))
-(def root (parent-if-exists rmm (get-cur rmm)))
-; (ut/ppprint root)
-; (count (:nodes rmm))
-; (ut/ppprint (edges-from-map n-e-m root))
-; (ut/ppprint (nodes-from-map rmm n-e-m root))
-; (ut/ppprint root)
-; (get n-e-m 7239)
-; (def cur (get (:nodes rmm) 7239))
-; (ut/ppprint cur)
-(ut/ppprint (as-tree rmm root 100))
-
-(let [mm (rand-mm)
-      cur (get-cur mm)]
-  (get-root mm cur))
-
-
+(defn as-tree-example []
+  (let [rmm (rand-mm :num-nodes 8 :seed 3)
+        root (get-root rmm (get-cur rmm))
+        tree (as-tree rmm root 100)])
+  (ppprint tree))

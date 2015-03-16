@@ -240,7 +240,11 @@
 (defn rand-mm
   "Convenience function to generate a random mindmap.
 
-  WARNING: does not create acyclic graphs. TODO
+  WARNING: test-to-tree, when called multiple times, seems to suggest that
+    rand-mm isn't properly honoring the seed passed in -- it comes out
+    different on different runs. But asking for, say, (nextFloat) returns
+    the same value every time that this fn is called. WTF is going on?
+  WARNING: may not create acyclic graphs. TODO
   TODO now that I think about it, I think it actually does create acyclic graphs.
   But think it through a bit more.
 

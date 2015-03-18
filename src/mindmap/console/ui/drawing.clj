@@ -1,4 +1,5 @@
 (ns mindmap.console.ui.drawing
+  (:require [mindmap.console.ui.core :as core])
 ;  (:require [mindmap.ht :as ht])
   (:require [lanterna.screen :as s]))
 
@@ -52,7 +53,7 @@
   (let [screen (:screen context)
         [width height] @screen-size
         h (- height 1)
-        wx (+ (count msg) 2) ]
+        wx (+ (count msg) 3) ]
     (s/put-string screen 0 h ">" {:fg :green})
     (s/put-string screen 2 h msg)
     (s/move-cursor screen wx h)))
@@ -166,7 +167,7 @@
 (defmethod draw-ui :cmd-line-inspect-node 
   [ui context]
   ;(println "draw-ui> :cmd-line-inspect-node")
-  (draw-cmdline context ":cmd-line-inspect-node...")
+  (draw-cmdline context (core/get-buffer-string context))
   ; Pull Out Node Title for display
   )
 

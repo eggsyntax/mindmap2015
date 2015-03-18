@@ -58,7 +58,7 @@
      (-> cleared-context
         (assoc :uis [ (->UI :vis-hyper)
                       (->UI :cmd-line-inspect-node) ])
-        (buffer-input input cleared-context)))))
+        (buffer-input (str input " (No Keymap)"))))))
 
 (defmethod process-input :exit-validate
   [context input]

@@ -41,6 +41,7 @@
     ; Round up to the nearest cell
     (Math/round (float (/ diff 2)))))
 
+; The Header is 2 Lines tall
 (defn draw-header
   [context]
   (let [screen (:screen context)
@@ -68,6 +69,22 @@
       (let [tr-str (subs string 0 no-el-width)]
         (str tr-str "...")))))
 
+; The viewport for drawing the main area 
+; of the current console area in between the 
+; Header and the Command Line 
+; 
+(defrecord Viewport [x-offset y-offset width height])
+
+; TODO Eventually it may be nice to generalize the drawing 
+;      elements s/t the header and cmd-line can be queried
+;      instead of hard-coded. lol
+; 
+(defn get-viewport
+  [screen]
+  (let [[w h] (s/get-size screen)] 
+    (println "get-viewport> " w "x" h)
+    (Viewport. 0 3 w (- h 1))))
+
 ;  List View
 ; 
 ;Node 00
@@ -87,7 +104,9 @@
 ;
 (defn draw-list-node
   [depth h screen]
-    )
+  (let [viewport (get-viewport screen)]
+    (println "draw-list-node> viewport=" viewport)
+    ))
 
 ; 
 ; NOTE: The viewport of the graph representation is 
@@ -96,7 +115,9 @@
 ;
 (defn draw-list
   [context]
-  (let [screen (:screen context)]
+  (let [screen (:screen context)
+        viewport (get-viewport screen) ]
+    (println "draw-list> viewport=" viewport)
     (s/put-string screen 10 5 "DRAW LIST"))) 
 
 ; Tree View 

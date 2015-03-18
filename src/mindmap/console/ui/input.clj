@@ -9,7 +9,7 @@
         ; Get one character at a time accumulating it
         ; unless its fully processed
         input (s/get-key-blocking screen)]
-;    (println "get-input> input=" input)
+    (println "get-input> input=" input)
     (assoc context :input input)))
 
 ; Processes the input given the input mode 

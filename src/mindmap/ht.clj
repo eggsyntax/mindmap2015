@@ -40,13 +40,11 @@
 
 (defn rand-hypertree
  "Convenience function to generate a random mindmap.
-  Optional arguments:
-    :num-nodes        - Size of the mindmap  (default 4)
-    :seed             - for the RNG (default 255, or -1 to randomize)
-    :num-extra-links  - number of non-child links to add" 
-  [& {:keys [num-nodes seed num-extra-links]
-      :or   {num-nodes 10, seed 255, num-extra-links 0}}]
-  (let [first-mm (mm/rand-mm num-nodes seed num-extra-links)]
+    num-nodes        - Size of the mindmap  (default 4)
+    seed             - for the RNG (default 255, or -1 to randomize)
+    num-extra-links  - number of non-child links to add" 
+  [num-nodes seed num-links]
+  (let [first-mm (mm/rand-mm :num-nodes num-nodes :seed seed :num-extra-links num-links)]
     (hypertree-from-mindmap first-mm)))
 
 (defn get-head

@@ -14,7 +14,8 @@
     (map->Context {:screen screen
                    :mode :navigate
                    :style :list
-                   :hyper nil ; (ht/rand-hypertree)
+                   ; 100-node random hypertree with 5 non-child links
+                   :hyper (ht/rand-hypertree 100 -1 5)
                    :uis [(->UI :header)
                          (->UI :vis-hyper)
                          (->UI :cmd-line-inspect-node)]

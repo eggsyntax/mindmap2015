@@ -80,10 +80,20 @@
 ;    Node 23
 ;
 ; Fixed-size? 
+; 
+; NOTE: The viewport of the graph representation is 
+;       padded by 1 line above and 1 line below 
+;       of the current screen dims
+;
 (defn draw-list-node
   [depth h screen]
     )
 
+; 
+; NOTE: The viewport of the graph representation is 
+;       padded by 1 line above and 1 line below 
+;       of the current screen dims
+;
 (defn draw-list
   [context]
   (let [screen (:screen context)]

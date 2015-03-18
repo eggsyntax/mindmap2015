@@ -18,6 +18,9 @@
   [cols rows] 
   (dosync (ref-set screen-size [cols rows])))
 
+; TODO There is a bug where the intial size of in-term 
+;      (:text) is badly off so there is screen cruft until 
+;      you interact a bit
 (defn create-screen 
   [screen-type]
   (let [screen (s/get-screen screen-type {:resize-listener handle-resize})
@@ -36,6 +39,13 @@
         diff (- width (count txt)) ]
     ; Round up to the nearest cell
     (Math/round (float (/ diff 2)))))
+
+(defn draw-header
+  [context]
+  (let [screen (:screen context)
+        txt "Hypertree Console 0.1"
+        pad (get-center-pad txt) ]
+      (s/put-string screen pad 1 txt {:fg :green})))
 
 (defn draw-cmdline 
   [context msg]
@@ -68,11 +78,10 @@
 ;    Node 22
 ;    Node 23
 ;
-
 ; Fixed-size? 
 (defn draw-list-node
   [depth h screen]
-    (println "draw-list-node> called") )
+    )
 
 (defn draw-list
   [context]
@@ -147,41 +156,29 @@
 
 (defmethod draw-ui :vis-hyper
   [ui context]
+  (draw-header context)
   (let [style (:style context)]
     (case style
       :tree (draw-tree context)
       :list (draw-list context)
-      ) 
-    ))
-
-(defmethod draw-ui :header 
-  [ui context]
-  (let [screen (:screen context)
-        txt "Hypertree Console 0.1"
-        pad (get-center-pad txt) ]
-      (s/put-string screen pad 1 txt {:fg :green})))
+      )))
 
 (defmethod draw-ui :cmd-line-inspect-node 
   [ui context]
-  (println "draw-ui> :cmd-line-inspect-node")
+  ;(println "draw-ui> :cmd-line-inspect-node")
   (draw-cmdline context ":cmd-line-inspect-node...")
   ; Pull Out Node Title for display
   )
 
-(defmethod draw-ui :cmd-line-editing 
+(defmethod draw-ui :exit-screen 
   [ui context]
-  ; Pull Out current input buffer for display
-  )
-
-(defmethod draw-ui :cmd-line-exit-val 
-  [ui context]
+  (draw-header context)
   (draw-cmdline context "Do you want to exit y/n?"))
 
 (defn draw-app [context]
   (let [screen (:screen context)]
     (s/clear screen)
     (doseq [ui (:uis context)]
-      (println "draw-app> Drawing " ui)
       (draw-ui ui context))
     (s/redraw screen)))
 

@@ -3,13 +3,27 @@
 ;  (:require [mindmap.ht :as ht])
   (:require [lanterna.screen :as s]))
 
-
-(defmulti node-bounds :style)
-(defmulti tree-bounds :style)
-(defmulti anchor-node :style)
-(defmulti viewable-subtree :style)
-(defmulti draw-node :style)
 (defmulti draw-mm :style)
+
+(defmulti anchor-node 
+  "The node which anchors the viewable subtree 
+  of the mindmap given the cur-node"
+  :style)
+
+(defmulti 
+  "The subtree which can be drawn on the viewport
+  given the anchor node"
+  viewable-subtree :style)
+
+(defmulti tree-dims 
+  "The dimensions of the entire tree in screen coordinates"
+  :style)
+
+(defmulti node-bounds 
+  "The bounds of a node in screen coordinates"
+  :style)
+
+(defmulti draw-node :style)
 
 ;  List View
 ; 

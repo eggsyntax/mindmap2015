@@ -69,12 +69,6 @@
       (let [tr-str (subs string 0 no-el-width)]
         (str tr-str "...")))))
 
-
-
-; The viewport for drawing the main area 
-; of the current console area in between the 
-; Header and the Command Line 
-;  
 (defrecord Viewport [x-offset y-offset width height])
 
 ; TODO Eventually it may be nice to generalize the drawing 
@@ -84,6 +78,9 @@
 (defn get-viewport
   [screen margin]
   (let [[w h] (s/get-size screen)] 
+    ; The Viewport is the drawable area less the 
+    ; header, cmd-line and margins
+    ; 
     (println "get-viewport> " w "x" h)
     (Viewport. 0 3 w (- h 1))))
 
@@ -105,6 +102,7 @@
 (defmethod draw-ui :vis-hyper
   [ui context]
   (draw-header context)
+  ; call draw mm on the head of the hypertree
 )
 
 (defmethod draw-ui :cmd-line-inspect-node 

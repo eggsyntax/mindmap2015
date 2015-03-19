@@ -69,10 +69,12 @@
       (let [tr-str (subs string 0 no-el-width)]
         (str tr-str "...")))))
 
+
+
 ; The viewport for drawing the main area 
 ; of the current console area in between the 
 ; Header and the Command Line 
-; 
+;  
 (defrecord Viewport [x-offset y-offset width height])
 
 ; TODO Eventually it may be nice to generalize the drawing 
@@ -80,96 +82,10 @@
 ;      instead of hard-coded. lol
 ; 
 (defn get-viewport
-  [screen]
+  [screen margin]
   (let [[w h] (s/get-size screen)] 
     (println "get-viewport> " w "x" h)
     (Viewport. 0 3 w (- h 1))))
-
-;  List View
-; 
-;Node 00
-;  Node 10
-;    Node 20
-;    Node 21
-;      Node 30
-;  Node 20
-;    Node 22
-;    Node 23
-;
-; Fixed-size? 
-; 
-; NOTE: The viewport of the graph representation is 
-;       padded by 1 line above and 1 line below 
-;       of the current screen dims
-;
-(defn draw-list-node
-  [depth h screen]
-  (let [viewport (get-viewport screen)]
-    (println "draw-list-node> viewport=" viewport)
-    ))
-
-; 
-; NOTE: The viewport of the graph representation is 
-;       padded by 1 line above and 1 line below 
-;       of the current screen dims
-;
-(defn draw-list
-  [context]
-  (let [screen (:screen context)
-        viewport (get-viewport screen) ]
-    (println "draw-list> viewport=" viewport)
-    (s/put-string screen 10 5 "DRAW LIST"))) 
-
-; Tree View 
-;
-; Calculate how many nodes can fit on the screen
-;
-;  Height = 1 char plus vertical padding
-;  Width = 12 char plus horizontal padding
-;  
-; NOTES:
-;
-;  This should fit as much of the map and children
-;  on the screen as possible...
-;
-;  General Example:
-;
-;[Node -1   ] 
-;             \
-;[Node 0    ]  \
-;             \ \
-;[Node 1    ]  \ \               [Node B     ]
-;             \ \ \            /  
-;[Node 2    ] -- [Node 3    ] -- [Node A     ]
-;             / / /            \
-;[Node 5    ]  / /               [Node C     ] 
-;             / /
-;[Node 6    ]  /
-;             /
-;[Node 7    ]
-
-
-; Each node has a fixed size with the following format:
-;
-;  [Title...]  (12 Chars)
-;
-; The head of the mindmap is green
-; 
-; TODO By Convention use :title for now
-;      eventually it would be great for this 
-;      to be smarter about displaying attributes
-;
-;[def max-node-width 12]
-(defn draw-tree-node
-  [node x y screen]
-  (let [title (:title node)
-        t-title (truncate-str title 12) ]
-    (s/put-string screen x y (str "[" t-title "]"))))
-
-(defn draw-tree
-  [context]
-  (let [screen (:screen context)]
-    (s/put-string screen 10 5 "DRAW TREE")))
 
 
 ; UI Handlers ----------------------------------------------------------------
@@ -189,11 +105,7 @@
 (defmethod draw-ui :vis-hyper
   [ui context]
   (draw-header context)
-  (let [style (:style context)]
-    (case style
-      :tree (draw-tree context)
-      :list (draw-list context)
-      )))
+)
 
 (defmethod draw-ui :cmd-line-inspect-node 
   [ui context]

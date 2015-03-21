@@ -1,4 +1,5 @@
 (ns mindmap.console.ui.drawing
+  (:require [mindmap.console.ui.core :as core])
 ;  (:require [mindmap.ht :as ht])
   (:require [lanterna.screen :as s]))
 
@@ -18,6 +19,9 @@
   [cols rows] 
   (dosync (ref-set screen-size [cols rows])))
 
+; TODO There is a bug where the intial size of in-term 
+;      (:text) is badly off so there is screen cruft until 
+;      you interact a bit
 (defn create-screen 
   [screen-type]
   (let [screen (s/get-screen screen-type {:resize-listener handle-resize})
@@ -37,12 +41,20 @@
     ; Round up to the nearest cell
     (Math/round (float (/ diff 2)))))
 
+; The Header is 2 Lines tall
+(defn draw-header
+  [context]
+  (let [screen (:screen context)
+        txt "Hypertree Console 0.1"
+        pad (get-center-pad txt) ]
+      (s/put-string screen pad 1 txt {:fg :green})))
+
 (defn draw-cmdline 
   [context msg]
   (let [screen (:screen context)
         [width height] @screen-size
         h (- height 1)
-        wx (+ (count msg) 2) ]
+        wx (+ (count msg) 3) ]
     (s/put-string screen 0 h ">" {:fg :green})
     (s/put-string screen 2 h msg)
     (s/move-cursor screen wx h)))
@@ -57,78 +69,20 @@
       (let [tr-str (subs string 0 no-el-width)]
         (str tr-str "...")))))
 
-;  List View
+(defrecord Viewport [x-offset y-offset width height])
+
+; TODO Eventually it may be nice to generalize the drawing 
+;      elements s/t the header and cmd-line can be queried
+;      instead of hard-coded. lol
 ; 
-;Node 00
-;  Node 10
-;    Node 20
-;    Node 21
-;      Node 30
-;  Node 20
-;    Node 22
-;    Node 23
-;
-
-; Fixed-size? 
-(defn draw-list-node
-  [depth h screen]
-    (println "draw-list-node> called") )
-
-(defn draw-list
-  [context]
-  (let [screen (:screen context)]
-    (s/put-string screen 10 5 "DRAW LIST"))) 
-
-; Tree View 
-;
-; Calculate how many nodes can fit on the screen
-;
-;  Height = 1 char plus vertical padding
-;  Width = 12 char plus horizontal padding
-;  
-; NOTES:
-;
-;  This should fit as much of the map and children
-;  on the screen as possible...
-;
-;  General Example:
-;
-;[Node -1   ] 
-;             \
-;[Node 0    ]  \
-;             \ \
-;[Node 1    ]  \ \               [Node B     ]
-;             \ \ \            /  
-;[Node 2    ] -- [Node 3    ] -- [Node A     ]
-;             / / /            \
-;[Node 5    ]  / /               [Node C     ] 
-;             / /
-;[Node 6    ]  /
-;             /
-;[Node 7    ]
-
-
-; Each node has a fixed size with the following format:
-;
-;  [Title...]  (12 Chars)
-;
-; The head of the mindmap is green
-; 
-; TODO By Convention use :title for now
-;      eventually it would be great for this 
-;      to be smarter about displaying attributes
-;
-;[def max-node-width 12]
-(defn draw-tree-node
-  [node x y screen]
-  (let [title (:title node)
-        t-title (truncate-str title 12) ]
-    (s/put-string screen x y (str "[" t-title "]"))))
-
-(defn draw-tree
-  [context]
-  (let [screen (:screen context)]
-    (s/put-string screen 10 5 "DRAW TREE")))
+(defn get-viewport
+  [screen margin]
+  (let [[w h] (s/get-size screen)] 
+    ; The Viewport is the drawable area less the 
+    ; header, cmd-line and margins
+    ; 
+    (println "get-viewport> " w "x" h)
+    (Viewport. 0 3 w (- h 1))))
 
 
 ; UI Handlers ----------------------------------------------------------------
@@ -147,41 +101,26 @@
 
 (defmethod draw-ui :vis-hyper
   [ui context]
-  (let [style (:style context)]
-    (case style
-      :tree (draw-tree context)
-      :list (draw-list context)
-      ) 
-    ))
-
-(defmethod draw-ui :header 
-  [ui context]
-  (let [screen (:screen context)
-        txt "Hypertree Console 0.1"
-        pad (get-center-pad txt) ]
-      (s/put-string screen pad 1 txt {:fg :green})))
+  (draw-header context)
+  ; call draw mm on the head of the hypertree
+)
 
 (defmethod draw-ui :cmd-line-inspect-node 
   [ui context]
-  (println "draw-ui> :cmd-line-inspect-node")
-  (draw-cmdline context ":cmd-line-inspect-node...")
+  ;(println "draw-ui> :cmd-line-inspect-node")
+  (draw-cmdline context (core/get-buffer-string context))
   ; Pull Out Node Title for display
   )
 
-(defmethod draw-ui :cmd-line-editing 
+(defmethod draw-ui :exit-screen 
   [ui context]
-  ; Pull Out current input buffer for display
-  )
-
-(defmethod draw-ui :cmd-line-exit-val 
-  [ui context]
+  (draw-header context)
   (draw-cmdline context "Do you want to exit y/n?"))
 
 (defn draw-app [context]
   (let [screen (:screen context)]
     (s/clear screen)
     (doseq [ui (:uis context)]
-      (println "draw-app> Drawing " ui)
       (draw-ui ui context))
     (s/redraw screen)))
 

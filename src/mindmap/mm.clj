@@ -139,6 +139,7 @@
   Return modified mindmap."
   [mm origin dest attributes]
   (let [edge (create-edge origin dest attributes)
+        ;_ (println (str "Origin: " (:id origin) "; Dest: " (:id dest)))
         updated-edges (conj (:edges mm) edge)]
     (assoc mm :edges updated-edges)))
 
@@ -146,7 +147,8 @@
   "Add a new node as the child of the parent node making the child the current node. Return modified mindmap."
   [mm parent node-attrs edge-attrs]
   (let [new-map (add-node mm node-attrs)
-        new-node (get-cur new-map) ]
+        _ (println "Adding from " (:id parent))
+        new-node (get-cur new-map)]
     (add-edge new-map parent new-node edge-attrs)))
 
 (defn remove-edge
@@ -231,8 +233,8 @@
 (defn get-root [mm node]
   (loop [cur node]
     (let [cur-parent (parent-if-exists mm cur)]
-      (ut/ppprint (str "cur:" (:id cur)))
-      (ut/ppprint (str "cur-parent:" (:id cur-parent)))
+      ; (ut/ppprint (str "cur:" (:id cur)))
+      ; (ut/ppprint (str "cur-parent:" (:id cur-parent)))
       (if cur-parent
         (recur cur-parent)
         cur))))
@@ -240,8 +242,7 @@
 (defn rand-mm
   "Convenience function to generate a random mindmap.
 
-  WARNING: test-to-tree, when called multiple times, seems to suggest that
-    rand-mm isn't properly honoring the seed passed in -- it comes out
+  WARNING: rand-mm isn't properly honoring the seed passed in -- it comes out
     different on different runs. But asking for, say, (nextFloat) returns
     the same value every time that this fn is called. WTF is going on?
   WARNING: may not create acyclic graphs. TODO
@@ -278,7 +279,11 @@
         main-map (reduce add-a-node new-map (range (- num-nodes 1)))
         ]
     ; Add extra edges if requested
-    (reduce add-extra-edge main-map (range num-extra-links))))
+    ;TODO uncomment after finding indeterminacy
+    main-map
+    ;(reduce add-extra-edge main-map (range num-extra-links))
+
+    ))
 
 ;(ut/ppprint (rand-mm :num-nodes 3 :num-extra-links 1))
 ;(def r1 (rand-mm :num-nodes 6 :num-extra-links 1))

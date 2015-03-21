@@ -24,16 +24,20 @@
       (map node-from-edge (edges-from-map node-edge-map node))))
 
 (defn to-tree
-  "Return the tree whose root is 'node', to a depth of 'depth'. Pass depth
-  of nil to return entire tree."
+  "Return the tree whose root is 'node', to a depth of 'depth'. Doesn't find disjoint trees."
+  ; Default depth assumption
+  ([mm node]
+   (to-tree mm node 1000))
+
+  ; Outer call
   ([mm node depth]
    ;TODO - ultimately after doing all this, we should scan for unhandled nodes
    ;  in case of disjoint trees. Maybe.
    (let [node-edge-map (make-node-edge-map mm)]
      (to-tree mm node depth node-edge-map)))
 
+  ; Recursive call
   ([mm node depth node-edge-map]
-   (println "depth: " depth)
    (cons node
          (if (> depth 0)
            (for [cur (nodes-from-map mm node-edge-map node)]
@@ -46,5 +50,9 @@
 (defn to-tree-example []
   (let [rmm (rand-mm :num-nodes 8 :seed 3)
         root (get-root rmm (get-cur rmm))
-        my-tree (to-tree rmm root 100)]
+        my-tree (to-tree rmm root)]
     (ppprint my-tree)))
+
+(do
+  (ut/reset-indexer)
+  (to-tree-example))

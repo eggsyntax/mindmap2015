@@ -34,7 +34,7 @@
 
 (def rmm2 (mm/rand-mm))
 
-(ut/ppprint (mm/rand-mm :num-nodes 3))
+;(ut/ppprint (mm/rand-mm :num-nodes 3))
 
 (run-tests)
 

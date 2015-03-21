@@ -280,6 +280,6 @@
     ; Add extra edges if requested
     (reduce add-extra-edge main-map (range num-extra-links))))
 
-(ut/ppprint (rand-mm :num-nodes 3 :num-extra-links 1))
-(def r1 (rand-mm :num-nodes 6 :num-extra-links 1))
-(nth (vals (:nodes r1)) 3)
+;(ut/ppprint (rand-mm :num-nodes 3 :num-extra-links 1))
+;(def r1 (rand-mm :num-nodes 6 :num-extra-links 1))
+;(nth (vals (:nodes r1)) 3)

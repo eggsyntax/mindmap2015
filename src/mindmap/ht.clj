@@ -27,22 +27,22 @@
 (defn- hypertree-from-mindmap
   [first-mm]
   (let [node-no-id (Node. nil first-mm {})
-        first-node (ut/with-id node-no-id) 
+        first-node (ut/with-id node-no-id)
         tree-coll [first-node]
-        ht (Hypertree. 
+        ht (Hypertree.
              (zip/vector-zip tree-coll)
              (:id first-node)) ]
       ; Move the zipper to point to the first node
       (assoc ht :nodes (zip/down (:nodes ht)))))
 
-(defn default-hypertree [] 
+(defn default-hypertree []
   (hypertree-from-mindmap (mm/default-mindmap)))
 
 (defn rand-hypertree
  "Convenience function to generate a random mindmap.
     num-nodes        - Size of the mindmap  (default 4)
     seed             - for the RNG (default 255, or -1 to randomize)
-    num-extra-links  - number of non-child links to add" 
+    num-extra-links  - number of non-child links to add"
   [num-nodes seed num-links]
   (let [first-mm (mm/rand-mm :num-nodes num-nodes :seed seed :num-extra-links num-links)]
     (hypertree-from-mindmap first-mm)))

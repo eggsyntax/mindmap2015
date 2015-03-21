@@ -1,5 +1,5 @@
-(ns mindmap.test-as-tree
-  (:use [mindmap.as-tree]
+(ns mindmap.tree
+  (:use [mindmap.tree]
         [mindmap.util :as ut]
         [clojure.test])
   (:require [mindmap.mm :as mm]))

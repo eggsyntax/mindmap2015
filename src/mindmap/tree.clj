@@ -1,4 +1,4 @@
-(ns mindmap.as-tree
+(ns mindmap.tree
   (:use [mindmap.mm]
         [mindmap.util :as ut]))
 
@@ -13,8 +13,8 @@
                      (update-in cur-map [(:origin-id edge)] conj edge))]
     (reduce add-to-map {} edges)))
 
-(ut/demo (def rmm (rand-mm :num-nodes 8 :seed -1)))
-(ut/ppprint (make-node-edge-map rmm))
+;(ut/demo (def rmm (rand-mm :num-nodes 8 :seed -1)))
+;(ut/ppprint (make-node-edge-map rmm))
 
 (defn- edges-from-map [node-edge-map node]
   (get node-edge-map (:id node)))

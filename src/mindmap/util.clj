@@ -13,16 +13,20 @@
   []
   (nsrepl/refresh))
 
-(defn get-indexer
+(def atomic-integer (atom (java.util.concurrent.atomic.AtomicInteger.)))
+
+(defn main-indexer
   "Helper function to create an indexer for a mm. Whenever the returned fn
   is called, it returns an incremented index.
   TEST only! Shouldn't ever be used in prod."
   []
-  (def add-and-get
-    (let [ai (java.util.concurrent.atomic.AtomicInteger.)]
-      (fn [] (.addAndGet ai 1)))))
+  (.addAndGet @atomic-integer 1))
 
-(def main-indexer (get-indexer))
+(defn reset-indexer
+  "Convenience function (for testing only) to reset the main-indexer back
+  to 0. Use with caution! Testing only!"
+  []
+  (reset! atomic-integer (java.util.concurrent.atomic.AtomicInteger.)))
 
 (defn gen-id
   [item]
@@ -58,7 +62,7 @@
     (println string stuff)
     eval stuff))
 
-(logged "test-log" '("foo" "bar")) ;test
+;(logged "test-log" '("foo" "bar")) ;test
 
 (defn to-str
   "pretty-print object or lazy seq to string"

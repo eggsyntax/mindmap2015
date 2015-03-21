@@ -47,6 +47,12 @@
                  retval)))
            nil))))
 
+
+(defn mm-example []
+  (let [rmm (rand-mm :num-nodes 8 :seed 3)
+        root (get-root rmm (get-cur rmm)) ]
+    (ppprint rmm)))
+
 (defn to-tree-example []
   (let [rmm (rand-mm :num-nodes 8 :seed 3)
         root (get-root rmm (get-cur rmm))
@@ -56,3 +62,7 @@
 (do
   (ut/reset-indexer)
   (to-tree-example))
+
+(do
+  (ut/reset-indexer)
+  (mm-example))

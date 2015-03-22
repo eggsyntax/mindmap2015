@@ -33,6 +33,8 @@
     1
     (compare (:id a) (:id b))))
 
+;TODO maybe consider making sorting optional - it makes printing consistent
+; but at a small performance penalty, and it's unnecessary for some porpoises.
 (defn to-tree
   "Return the tree whose root is 'node', to a depth of 'depth'. Doesn't find disjoint trees."
   ; Default depth assumption
@@ -59,3 +61,29 @@
                  retval)))
            nil))))
 
+(defn- walk-str-fn
+  "Given an Entity (assumed to be a node), return a nice string of it.
+  Given anything else, return that thing."
+  [thing]
+  (if (= (type thing) mindmap.mm.Entity)
+    (:id thing)
+    thing))
+
+(defn tree-ids
+  "Return a simple tree matching tr but containing only ids. Useful
+  basis for other representation functions and mappings of trees."
+  [tr]
+  (postwalk walk-str-fn tr))
+
+; Example tree
+(def ex-tree
+  (let [_ (ut/reset-indexer)
+        rmm (rand-mm :num-nodes 8 :seed 3)
+        root (get-root rmm (get-cur rmm))
+        my-tree (to-tree rmm root)
+        ;_ (ppprint my-tree)
+        ]
+    my-tree))
+
+(ut/ppprint ex-tree)
+(tree-ids ex-tree)

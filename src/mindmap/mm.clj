@@ -240,10 +240,6 @@
 (defn rand-mm
   "Convenience function to generate a random mindmap.
 
-  WARNING: may not create acyclic graphs. TODO
-  TODO now that I think about it, I think it actually does create acyclic graphs.
-  But think it through a bit more.
-
   Optional arguments:
     :num-nodes        - Size of the mindmap (default 4)
     :seed             - for the RNG (default 255, or -1 to randomize)

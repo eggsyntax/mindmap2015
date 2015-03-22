@@ -5,7 +5,16 @@
 
 "Functions for returning tree views of mindmaps"
 
-(defn make-node-edge-map
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; The naive approach to building a tree would be, for each node, to search the
+; mindmap for edges leading from that node. That's O(N*E), though. In the
+; interest of performance, we instead build a map from nodes to lists of edges,
+; so that we can retrieve all edges for a node in O(1) time. That way, building
+; the tree is O(N+E) instead of O(N*E), at the cost of some additional code
+; complexity.
+; To that end, we create the following helper functions:
+
+(defn- make-node-edge-map
   "Return a map from node to (edges). Allows fast downward navigation. Runs
   in O(E) with E the number of edges."
   [mm]
@@ -14,26 +23,30 @@
                      (update-in cur-map [(:origin-id edge)] conj edge))]
     (reduce add-to-map {} edges)))
 
-;(ut/demo (def rmm (rand-mm :num-nodes 8 :seed -1)))
-;(ut/ppprint (make-node-edge-map rmm))
+; (ut/demo (def rmm (rand-mm :num-nodes 12 :seed -1)))
+; (ut/ppprint (make-node-edge-map rmm))
 
-(defn- edges-from-map [node-edge-map node]
+(defn- edges-from-nem [node-edge-map node]
   (get node-edge-map (:id node)))
 
-(defn- nodes-from-map [mm node-edge-map node]
+(defn- nodes-from-nem [mm node-edge-map node]
    (let [node-from-edge (fn [edge] (get (:nodes mm) (:dest-id edge)))]
-      (map node-from-edge (edges-from-map node-edge-map node))))
+      (map node-from-edge (edges-from-nem node-edge-map node))))
+
+; End helper functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (defn- node-list-comparator
-  "Sort with node at the front, and subtrees after it in id order"
+  "Sort with node at the front, and subtrees after it in id order."
   ; note - each of either a and b is a node (at most one of them) or a list
-  ;TODO consistent but not quite what I want.
+  ;TODO consistent but maybe not quite what I want.
   [a b]
   (if (seq? a)
     1
     (compare (:id a) (:id b))))
 
-;TODO maybe consider making sorting optional - it makes printing consistent
+; Consider making sorting optional - it makes printing consistent
 ; but at a small performance penalty, and it's unnecessary for some porpoises.
 (defn to-tree
   "Return the tree whose root is 'node', to a depth of 'depth'. Doesn't find disjoint trees."
@@ -54,26 +67,29 @@
   ([mm node depth node-edge-map]
    (cons node
          (if (> depth 0)
-           (for [cur (nodes-from-map mm node-edge-map node)]
-             (if (empty? (edges-from-map node-edge-map cur))
+           (for [cur (nodes-from-nem mm node-edge-map node)]
+             (if (empty? (edges-from-nem node-edge-map cur))
                (list cur)
                (let [retval (to-tree mm cur (- depth 1) node-edge-map)]
                  retval)))
            nil))))
 
 (defn- walk-str-fn
-  "Given an Entity (assumed to be a node), return a nice string of it.
+  "Given an Entity (assumed to be a node), return a function of it.
   Given anything else, return that thing."
-  [thing]
+  [f thing]
   (if (= (type thing) mindmap.mm.Entity)
-    (:id thing)
+    (f thing)
     thing))
+
+(defn display-fn [f] (partial walk-str-fn f))
 
 (defn tree-ids
   "Return a simple tree matching tr but containing only ids. Useful
   basis for other representation functions and mappings of trees."
   [tr]
-  (postwalk walk-str-fn tr))
+  (let [id-fn (display-fn #(:id %))]
+    (postwalk id-fn tr)))
 
 ; Example tree
 (def ex-tree

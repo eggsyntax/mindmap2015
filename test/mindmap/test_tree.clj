@@ -1,8 +1,9 @@
-(ns mindmap.tree
+(ns mindmap.test-tree
   (:use [mindmap.tree]
         [mindmap.util :as ut]
+        [mindmap.mm :as mm]
         [clojure.test])
-  (:require [mindmap.mm :as mm]))
+  )
 
 
 (deftest test-parent-of-1
@@ -32,9 +33,13 @@
      (ut/ppprint (to-tree mm root 5))))
 ;(test-to-tree)
 
-(def rmm2 (mm/rand-mm))
+(deftest test-tree-ids
+  (let [_ (ut/reset-indexer)
+        rmm (rand-mm :num-nodes 8 :seed 3)
+        root (get-root rmm (get-cur rmm))
+        example-tree (to-tree rmm root)
+        expected '(1 (2 (10 (12)) (14)) (4 (6)) (8))]
+    (is (= (tree-ids example-tree) expected))))
 
-;(ut/ppprint (mm/rand-mm :num-nodes 3))
 
 (run-tests)
-

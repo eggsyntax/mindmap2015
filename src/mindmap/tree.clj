@@ -1,6 +1,7 @@
 (ns mindmap.tree
   (:use [mindmap.mm]
-        [mindmap.util :as ut]))
+        [mindmap.util :as ut]
+        [clojure.walk :as walk]))
 
 "Functions for returning tree views of mindmaps"
 
@@ -23,6 +24,15 @@
    (let [node-from-edge (fn [edge] (get (:nodes mm) (:dest-id edge)))]
       (map node-from-edge (edges-from-map node-edge-map node))))
 
+(defn- node-list-comparator
+  "Sort with node at the front, and subtrees after it in id order"
+  ; note - each of either a and b is a node (at most one of them) or a list
+  ;TODO consistent but not quite what I want.
+  [a b]
+  (if (seq? a)
+    1
+    (compare (:id a) (:id b))))
+
 (defn to-tree
   "Return the tree whose root is 'node', to a depth of 'depth'. Doesn't find disjoint trees."
   ; Default depth assumption
@@ -34,7 +44,9 @@
    ;TODO - ultimately after doing all this, we should scan for unhandled nodes
    ;  in case of disjoint trees. Maybe.
    (let [node-edge-map (make-node-edge-map mm)]
-     (to-tree mm node depth node-edge-map)))
+     (sort
+       node-list-comparator
+       (to-tree mm node depth node-edge-map))))
 
   ; Recursive call
   ([mm node depth node-edge-map]
@@ -47,22 +59,3 @@
                  retval)))
            nil))))
 
-
-(defn mm-example []
-  (let [rmm (rand-mm :num-nodes 8 :seed 3)
-        root (get-root rmm (get-cur rmm)) ]
-    (ppprint rmm)))
-
-(defn to-tree-example []
-  (let [rmm (rand-mm :num-nodes 8 :seed 3)
-        root (get-root rmm (get-cur rmm))
-        my-tree (to-tree rmm root)]
-    (ppprint my-tree)))
-
-(do
-  (ut/reset-indexer)
-  (to-tree-example))
-
-(do
-  (ut/reset-indexer)
-  (mm-example))

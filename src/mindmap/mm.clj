@@ -139,7 +139,6 @@
   Return modified mindmap."
   [mm origin dest attributes]
   (let [edge (create-edge origin dest attributes)
-        ;_ (println (str "Origin: " (:id origin) "; Dest: " (:id dest)))
         updated-edges (conj (:edges mm) edge)]
     (assoc mm :edges updated-edges)))
 
@@ -147,7 +146,6 @@
   "Add a new node as the child of the parent node making the child the current node. Return modified mindmap."
   [mm parent node-attrs edge-attrs]
   (let [new-map (add-node mm node-attrs)
-        _ (println "Adding from " (:id parent))
         new-node (get-cur new-map)]
     (add-edge new-map parent new-node edge-attrs)))
 
@@ -242,9 +240,6 @@
 (defn rand-mm
   "Convenience function to generate a random mindmap.
 
-  WARNING: rand-mm isn't properly honoring the seed passed in -- it comes out
-    different on different runs. But asking for, say, (nextFloat) returns
-    the same value every time that this fn is called. WTF is going on?
   WARNING: may not create acyclic graphs. TODO
   TODO now that I think about it, I think it actually does create acyclic graphs.
   But think it through a bit more.

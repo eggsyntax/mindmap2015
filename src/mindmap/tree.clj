@@ -89,26 +89,36 @@
                  retval)))
            nil))))
 
-(defn- walk-str-fn
-  "Given an Entity (assumed to be a node), return a function of it.
-  Given anything else, return that thing. Handler for display-fn."
-  [f thing]
-  (if (= (type thing) mindmap.mm.Entity)
+; DELETE after, say, 4/1.
+; (defn- walk-str-fn
+;   "Given an Entity (assumed to be a node), return a function of it.
+;   Given anything else, return that thing. Handler for display-fn."
+;   [f thing]
+;   (if (= (type thing) mindmap.mm.Entity)
+;     (f thing)
+;     thing))
+
+(defn- apply-if-type
+  "Apply f to the thing, if it's the right sort of thing. Otherwise just
+  return the thing. Handler for display-fn."
+  [f the-type thing]
+  (if (= (type thing) the-type)
     (f thing)
     thing))
 
-(defn display-fn
-  "Return a function which can be applied to the members of a tree
-  during a walk. Pass in a function which can be applied to a node."
-  [f]
-  (partial walk-str-fn f))
+; DELETE after, say, 4/1.
+; (defn display-fn
+;   "Return a function which can be applied to the members of a tree
+;   during a walk. Pass in a function which can be applied to a node."
+;   [f]
+;   (partial walk-str-fn f))
 
-(defn tree-map
-  "Return a representation of this tree by walking the tree and applying
-  the supplied function to each contained node. As long as the function
-  returns a node, it can be chained."
+(defn coll-map
+  "Return a representation of this collection (eg a nested list) by walking it
+  and applying the supplied function to each contained item. As long as the
+  supplied function returns the same type it received, these can be chained."
   [tr f]
-  (let [wrapped-fn (display-fn f)]
+  (let [wrapped-fn (partial apply-if-type f)] ; This fn was made for walking.
     (postwalk wrapped-fn tr)))
 
 (defn tree-ids
@@ -146,8 +156,8 @@
         rmm (rand-mm :num-nodes 8 :seed 1)
         root (get-root rmm (get-cur rmm))
         my-tree (to-tree rmm root)
-        ;_ (ppprint my-tree)
+        _ (ppprint my-tree)
         ]
-    (ut/ppprint (tree-titles my-tree))))
+    (ut/ppprint (tree-ids my-tree))))
 
 (ex-tree)

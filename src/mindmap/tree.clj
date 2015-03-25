@@ -14,15 +14,24 @@
 ; complexity.
 ; To that end, we create the following helper functions:
 
+(defn- compare-edges
+  "Compare edges by timestamp. If timestamps are equal (frequently the case
+  in test, probably not IRL) sort by ids on the theory that lower ids were
+  added first."
+  [n1 n2]
+  (if (not= (:timestamp n1) (:timestamp n2))
+    (compare (:timestamp n1) (:timestamp n2))
+    (compare (:id n1) (:id n2))))
+
 (defn- make-node-edge-map
   "Return a sorted map from node to (edges). Allows fast downward navigation.
   Runs in O(E) with E the number of edges."
+  ; Note - don't try to apply walk to *this* - walk doesn't work on sorted-maps
   [mm]
   (let [edges (reverse (sort-by :id (:edges mm)))
         add-to-map (fn [cur-map edge]
                      (update-in cur-map [(:origin-id edge)] conj edge))
-        ;sort-fn (fn [a b] (< (:id a) (:id b)))
-        ;empty-sorted-map (sorted-map-by sort-fn)
+        empty-sorted-map (sorted-map-by compare-edges)
         ]
     ;(reduce add-to-map empty-sorted-map edges)
     (reduce add-to-map (sorted-map) edges)
@@ -39,6 +48,7 @@
    (let [node-from-edge (fn [edge] (get (:nodes mm) (:dest-id edge)))]
       (map node-from-edge (edges-from-nem node-edge-map node))))
 
+;TODO delete if unused
 (defn- node-list-comparator
   "Sort with node at the front, and subtrees after it in id order."
   ; note - each of either a and b is a node (at most one of them) or a list
@@ -55,6 +65,8 @@
 
 (defn to-tree
   "Return the tree whose root is 'node', to a depth of 'depth'. Doesn't find disjoint trees."
+  ; Natural candidate for memoization. Pluggable strategies in
+  ; https://github.com/clojure/core.memoize/
   ; Default depth assumption
   ([mm node]
    (to-tree mm node 1000))
@@ -91,9 +103,10 @@
   [f]
   (partial walk-str-fn f))
 
-(defn tree-rep
-  "Return a representation of this tree by applying the supplied
-  function to each contained node."
+(defn tree-map
+  "Return a representation of this tree by walking the tree and applying
+  the supplied function to each contained node. As long as the function
+  returns a node, it can be chained."
   [tr f]
   (let [wrapped-fn (display-fn f)]
     (postwalk wrapped-fn tr)))
@@ -102,13 +115,13 @@
   "Return a simple tree matching tr but containing only ids. Useful
   basis for other representation functions and mappings of trees."
   [tr]
-  (tree-rep tr #(:id %)))
+  (tree-map tr #(:id %)))
 
 (defn tree-titles
   "Return a tree containing the titles (and ids) of the nodes passed
   in."
   [tr]
-  (tree-rep tr  #(str (:title %) " (" (:id %) ")")))
+  (tree-map tr  #(str (:title %) " (" (:id %) ")")))
 
 (let [_ (ut/reset-indexer)
       rmm (rand-mm :num-nodes 8 :seed 1)
@@ -117,14 +130,24 @@
       ]
   (ut/ppprint (make-node-edge-map rmm)))
 
+(defn tree-ez-timestamp "Display timestamp as starting from 0" [tr]
+  (let [epoch (:timestamp (first tr))]
+    (tree-map tr (fn [nd]
+                   (update-in nd [:timestamp] #(- % epoch))
+                   ;(update-in nd [:timestamp] inc)
+                   ))))
+
+(def mrmm (rand-mm :num-nodes 8 :seed 3))
+(ut/ppprint mrmm)
+
 ; Example tree
 (defn ex-tree []
   (let [_ (ut/reset-indexer)
-        rmm (rand-mm :num-nodes 8 :seed 3)
+        rmm (rand-mm :num-nodes 8 :seed 1)
         root (get-root rmm (get-cur rmm))
         my-tree (to-tree rmm root)
-        _ (ppprint my-tree)
+        ;_ (ppprint my-tree)
         ]
-    (ut/ppprint (tree-ids my-tree))))
+    (ut/ppprint (tree-titles my-tree))))
 
 (ex-tree)

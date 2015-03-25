@@ -41,5 +41,6 @@
         expected '(1 (2 (10 (12)) (14)) (4 (6)) (8))]
     (is (= (tree-ids example-tree) expected))))
 
+;(test-tree-ids)
 
 (run-tests)

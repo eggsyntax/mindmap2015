@@ -74,12 +74,6 @@
 
 (defmulti draw-ui :action)
 
-; This is great but should end up being mapped to actual drawing tasks
-; like :tree-view/:list-view, :edit, :inspect, etc.
-;
-;  NOTE: Each drawing command (like :edit) can also prompt for 
-;        task-specific input from the user during its rendering
-; 
 (defmethod draw-ui :default 
   [ui context]
   ())
@@ -88,13 +82,12 @@
   [ui context]
   (draw-header context)
   (let [style (:style context)]
-   (if (= (:quickndirty style))
+   (if (= :quickndirty style)
     (draw-quick-n-dirty-tree context)
     (mmd/draw-mm (get-viewport (:screen context)) context))))
 
 (defmethod draw-ui :cmd-line-inspect-node 
   [ui context]
-  ;(println "draw-ui> :cmd-line-inspect-node")
   (draw-cmdline context (core/get-history-string context))
   ; Pull Out Node Title for display
   )

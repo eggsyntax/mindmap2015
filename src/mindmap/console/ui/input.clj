@@ -22,7 +22,7 @@
 
 (defmethod process-input :navigate 
   [context input]
-  (let [cleared-context (clear-input-buffer context)]
+  (let [cleared-context (clear-input-history context)]
     (case input
      \q  (-> cleared-context
             (assoc :uis [(->UI :exit-screen)])
@@ -33,7 +33,7 @@
      (-> cleared-context
         (assoc :uis [ (->UI :vis-hyper)
                       (->UI :cmd-line-inspect-node) ])
-        (buffer-input (str input " (No Keymap)"))))))
+        (save-input (str input " (No Keymap)"))))))
 
 (defmethod process-input :exit-validate
   [context input]

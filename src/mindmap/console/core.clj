@@ -41,6 +41,7 @@
 ;
 (defn run-app
   [start-context]
+  ; Can u directly use a record ?
   (loop [{:keys [screen mode style hyper uis input input-buffer] :as context} start-context] 
       (when (not= :exit mode)
         (if (nil? input)

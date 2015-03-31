@@ -113,12 +113,15 @@
 ;   [f]
 ;   (partial walk-str-fn f))
 
-(defn coll-map
-  "Return a representation of this collection (eg a nested list) by walking it
-  and applying the supplied function to each contained item. As long as the
-  supplied function returns the same type it received, these can be chained."
+(defn tree-map
+  "Return a representation of this tree by walking it and applying the supplied
+  function to each contained node. As long as the supplied function returns the
+  same type it received, these can be chained."
+  ; Note - could easily be generalized to a collection-map by taking an
+  ; item-type parameter.
   [tr f]
-  (let [wrapped-fn (partial apply-if-type f)] ; This fn was made for walking.
+  (let [item-type mindmap.mm.Entity
+        wrapped-fn (partial apply-if-type f item-type)] ; This fn was made for walking.
     (postwalk wrapped-fn tr)))
 
 (defn tree-ids

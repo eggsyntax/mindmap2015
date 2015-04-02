@@ -98,7 +98,7 @@
 ;     (f thing)
 ;     thing))
 
-(defn- apply-if-type
+(defn- apply-to
   "Apply f to the thing, if it's the right sort of thing. Otherwise just
   return the thing. Handler for display-fn."
   [f the-type thing]
@@ -121,7 +121,7 @@
   ; item-type parameter.
   [tr f]
   (let [item-type mindmap.mm.Entity
-        wrapped-fn (partial apply-if-type f item-type)] ; This fn was made for walking.
+        wrapped-fn (partial apply-to f item-type)] ; This fn was made for walking.
     (postwalk wrapped-fn tr)))
 
 (defn tree-ids
@@ -143,7 +143,11 @@
       ]
   (ut/ppprint (make-node-edge-map rmm)))
 
-(defn tree-ez-timestamp "Display timestamp as starting from 0" [tr]
+(defn tree-ez-timestamp
+  "DEPRECATED - the epoch functionality in util is now the better approach.
+  Leaving this here for a while as an example of how to use tree-map.
+  Display timestamp as starting from 0"
+  [tr]
   (let [epoch (:timestamp (first tr))]
     (tree-map tr (fn [nd]
                    (update-in nd [:timestamp] #(- % epoch))
@@ -156,6 +160,7 @@
 ; Example tree
 (defn ex-tree []
   (let [_ (ut/reset-indexer)
+        _ (ut/reset-epoch)
         rmm (rand-mm :num-nodes 8 :seed 1)
         root (get-root rmm (get-cur rmm))
         my-tree (to-tree rmm root)
@@ -163,4 +168,4 @@
         ]
     (ut/ppprint (tree-ids my-tree))))
 
-(ex-tree)
+;(ex-tree)

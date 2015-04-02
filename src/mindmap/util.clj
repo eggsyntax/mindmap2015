@@ -6,6 +6,7 @@
            [java.util Random]))
 
 (def debug-mode (atom false)) ; rebind this in the REPL or wherever as desired
+(def epoch (atom (if debug-mode (System/currentTimeMillis) 0)))
 
 (defn r!
   "Reset REPL.
@@ -27,6 +28,12 @@
   to 0. Use with caution! Testing only!"
   []
   (reset! atomic-integer (java.util.concurrent.atomic.AtomicInteger.)))
+
+(defn reset-epoch
+  "Convenience function (for testing only) to reset the epoch back
+  to 0. Use with caution! Testing only!"
+  []
+  (reset! epoch (System/currentTimeMillis)))
 
 (defn gen-id
   [item]
@@ -51,9 +58,10 @@
 ;TODO think hard about what gets a timestamp, and when. Remember that (in
 ;current design) if timestamp changes, id changes.
 (defn timestamp
-  "Return current timestamp in ms since epoch"
+  "Return current timestamp in ms since epoch (or, in debug-mode, time since
+  program start for readability)"
   []
-  (System/currentTimeMillis))
+  (- (System/currentTimeMillis) @epoch))
 
 (defn logged
   "Wrap any form in logged to have it printed to the console."

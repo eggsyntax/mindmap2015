@@ -162,7 +162,7 @@
   (let [_ (ut/reset-indexer)
         _ (ut/reset-epoch)
         rmm (rand-mm :num-nodes 8 :seed 1)
-        root (get-root rmm (get-cur rmm))
+        root (get-cur-root rmm)
         my-tree (to-tree rmm root)
         _ (ppprint my-tree)
         ]

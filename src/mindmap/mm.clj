@@ -228,14 +228,19 @@
     (catch AssertionError e
       nil)))
 
-(defn get-root [mm node]
+(defn get-root
+  "Get root of mindmap relative to some node"
+  [mm node]
   (loop [cur node]
     (let [cur-parent (parent-if-exists mm cur)]
-      ; (ut/ppprint (str "cur:" (:id cur)))
-      ; (ut/ppprint (str "cur-parent:" (:id cur-parent)))
       (if cur-parent
         (recur cur-parent)
         cur))))
+
+(defn get-cur-root
+  "Get root relative to current node"
+  [mm]
+  (get-root mm (get-cur mm)))
 
 (defn rand-mm
   "Convenience function to generate a random mindmap.

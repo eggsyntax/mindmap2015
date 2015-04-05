@@ -23,7 +23,6 @@
 (defrecord Node [id mm attrs])
 (defrecord Hypertree [nodes head-pointer])
 
-
 (defn- hypertree-from-mindmap
   [first-mm]
   (let [node-no-id (Node. nil first-mm {})
@@ -98,8 +97,7 @@
   "Commit a modified mindmap to this hypertree, and an edge from the previous head to
   the new mindmap. Make the new mindmap the head."
   [hyper mm attrs]
-  (let [orig-head-id (:head-pointer hyper)
-        node-no-id (Node. nil mm attrs)
+  (let [node-no-id (Node. nil mm attrs)
         new-node (ut/with-id node-no-id)
         zipper (:nodes hyper) ]
       ; zip up, insert a new vector with the new node, traverse down to it
@@ -114,30 +112,41 @@
                   (zip/down)))
           (assoc :head-pointer (:id new-node)))))
 
+(defn make-alter-hypertree
+  "Given a reference to the current hypertree, and a set of tree-level attributes
+  on the new mindmap, return a function which will apply its args to create
+  the altered hypertree."
+  [hyper tree-attrs]
+  (fn [mm-f & args]
+  ; Given a function of mm -> mm, and the appropriate args, apply that fn to
+  ; the head mm of the hypertree, and return a modified hypertree containing
+  ; (as head) the modified mm.
+    (let [mm (get-head hyper)
+          new-mm (apply mm-f mm args) ]
+      (commit-mindmap hyper new-mm tree-attrs))))
+
 (defn set-cur
   "Sets node to the current node of the head of the hypertree"
   [hyper node tree-attrs]
-  (let [mm (get-head hyper)
-        new-mm (mm/set-cur mm node)]
-    (commit-mindmap hyper new-mm tree-attrs)))
+  (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
+    (alter-ht mm/set-cur node)))
 
 (defn add-node
   "Adds a node with the given attributes to the head mindmap of this hypertree,
   and set it as the current node. Does not create any edges in the mindmap.
   Return the modified hypertree"
   [hyper node-attrs tree-attrs]
-  (let [mm (get-head hyper)
-        new-mm (mm/add-node mm node-attrs)]
-    (commit-mindmap hyper new-mm tree-attrs)))
+  (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
+    (alter-ht mm/add-node node-attrs))
+  )
 
 (defn add-new-node-from
   "Adds a child node to the given node with the given attributes to the head
   mindmap of this hypertree, and set it as the current node.  Return the
   modified hypertree"
   [hyper parent node-attrs edge-attrs tree-attrs]
-  (let [mm (get-head hyper)
-        new-mm (mm/add-new-node-from mm parent node-attrs edge-attrs)]
-    (commit-mindmap hyper new-mm tree-attrs)))
+  (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
+    (alter-ht mm/add-new-node-from parent node-attrs edge-attrs)))
 
 (defn add-edge
   "Add an edge to tee head mindmap of this hypertree Return the modified hypertree
@@ -150,33 +159,28 @@
     Consider interning edges for performance.
       http://nyeggen.com/post/2012-04-09-clojure/"
   [hyper origin dest edge-attrs tree-attrs]
-  (let [mm (get-head hyper)
-        new-mm  (mm/add-edge mm origin dest edge-attrs)]
-    (commit-mindmap hyper new-mm tree-attrs)))
+  (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
+    (alter-ht mm/add-edge origin dest edge-attrs)))
 
 (defn remove-node
   "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
   Returns the modified hypertree"
   ; Question: if we remove the current head node what happens ?
   [hyper node tree-attrs]
-  (let [mm (get-head hyper)
-        new-mm
-        (mm/remove-node mm node)]
-    (commit-mindmap hyper new-mm tree-attrs)))
+  (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
+    (alter-ht mm/remove-node node)))
 
 (defn remove-node-and-children
   "Removes this node and any edges that originate from or terminate at this node from the head of the hyperrmap.
   Returns the modified hypertree"
   ; Question: if we remove the current head node what happens ?
   [hyper node tree-attrs]
-  (let [mm (get-head hyper)
-        new-mm (mm/remove-node-and-children mm node)]
-    (commit-mindmap hyper new-mm tree-attrs)))
+  (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
+    (alter-ht mm/remove-node-and-children node)))
 
 (defn remove-edge
   "Removes an edge from the head of the hypertree Return the modified hypertree"
   [hyper edge tree-attrs]
-  (let [mm (get-head hyper)
-        new-mm (mm/remove-edge mm edge)]
-    (commit-mindmap hyper new-mm tree-attrs)))
+  (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
+    (alter-ht mm/remove-edge edge)))
 

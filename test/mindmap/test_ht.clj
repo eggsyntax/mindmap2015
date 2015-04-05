@@ -1,12 +1,26 @@
 (ns mindmap.test-ht
   (:use [mindmap.ht])
-  (:require [clojure.test :refer :all]))
+  (:require [clojure.test :refer :all]
+            [mindmap.mm :as mm]))
 
 (deftest test-default-hypertree
   (let [hyper (default-hypertree)
         mmap (get-head hyper) ]
     (is (= 1 (count (:nodes mmap))))
     (is (= 0 (count (:edges mmap))))))
+
+(deftest test-make-alter-hypertree
+  (let [rand-ht (rand-hypertree 8 3 0)
+        node-attrs {:title "ENode1" :flava :vanilla}
+        edge-attrs {:title "Edge to new cur" :type :child}
+        alter-ht (make-alter-hypertree rand-ht {:type :child :title "Made new node"})
+        new-ht (alter-ht mm/add-new-node-from (get-cur rand-ht) node-attrs edge-attrs)
+        new-mm (get-head new-ht)
+        new-node (get-cur new-ht)]
+    ; cur of the new ht is the one we wanted to add?
+    (is (= (:title (get-cur new-ht)) "ENode1"))
+    ; old cur is parent of new cur?
+    (is (= (mm/parent-of new-mm new-node) (get-cur rand-ht)))))
 
 (deftest test-get-cur
   (let [hyper (default-hypertree)]

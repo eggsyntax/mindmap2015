@@ -174,6 +174,9 @@
       (reduce remove-edge mm parent-edges)))
 
 (defn node-and-children
+  ;TODO could probably be made more efficient by taking advantage of the functionality
+  ; in tree.clj (at minimum by using make-node-edge-map, which would make just as much
+  ; sense living in this ns if we didn't want to make this ns aware of the tree ns)
   "Does a DFS and returns a seq that is the node and all its children"
   [mm node]
   ; Use a stack to do a DFS travesal of all the nodes to remove
@@ -195,15 +198,12 @@
     (-> mm
       (remove-child-edges node)
       (remove-parent-edges node)
-      (assoc :nodes new-nodes)
-    )
-  ))
+      (assoc :nodes new-nodes))))
 
 (defn remove-node-and-children
   [mm node]
   (let [children (node-and-children mm node) ]
-    (reduce remove-node mm children)
-  ))
+    (reduce remove-node mm children)))
 
 (defn parent-of
   "Returns the single node which is the parent of this node (ie via

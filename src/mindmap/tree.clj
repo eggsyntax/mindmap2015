@@ -67,6 +67,12 @@
   "Return the tree whose root is 'node', to a depth of 'depth'. Doesn't find disjoint trees."
   ; Natural candidate for memoization. Pluggable strategies in
   ; https://github.com/clojure/core.memoize/
+
+  ; Simplest case: find the root from cur
+  ;TODO this case added recently -- look for chances to refactor elsewhere to use it
+  ([mm]
+   (to-tree mm (get-cur-root mm)))
+
   ; Default depth assumption
   ([mm node]
    (to-tree mm node 1000))

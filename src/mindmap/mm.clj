@@ -233,8 +233,7 @@
   [mappish]
   (let [prunable? #(= (val %) :remove-attr)
         keys-to-prune (for [[k v] (seq mappish)]
-
-                        (do (println "K-V: " k " " v) (when (= v :remove-attr) (ut/logged "k is " k))))]
+                        (when (= v :remove-attr) (ut/logged "k is " k)))]
     (apply dissoc mappish keys-to-prune)))
 
 (defn rand-mm
@@ -290,19 +289,9 @@
   ([mm new-content]
    (alter-node mm (get-cur mm) new-content))
   ([mm node new-content]
-   (let [_ (println "Node at beginning of alter-node: " node)
-         _ (println "New-content at beginning of alter-node: " new-content)
-         altered-node (merge node new-content)
-         _ (println "Altered node:" altered-node)
-;          _ (println "type of :nodes is " (type (:nodes mm)))
-;          _ (println ":id node is " (:id node))
-;          _ (println ":nodes is " (ut/to-str (:nodes mm)))
+   (let [altered-node (merge node new-content)
          pruned-node (prune altered-node)
-         altered-mm   (assoc-in mm [:nodes (:id node)] pruned-node)
-         _ (println "Has been altered")
-         _ (println "Pruned!" (ut/to-str altered-mm))
-         _ (println "New cur: " (get-cur altered-mm))
-         ]
+         altered-mm   (assoc-in mm [:nodes (:id node)] pruned-node)]
      altered-mm)))
 
 (defn get-root

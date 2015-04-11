@@ -124,9 +124,7 @@
   ; the head mm of the hypertree, and return a modified hypertree containing
   ; (as head) the modified mm.
     (let [mm (get-head hyper)
-          new-mm (apply mm-f mm args)
-          _ (println "New cur (from make-alter-hypertree):" (mm/get-cur new-mm))
-          ]
+          new-mm (apply mm-f mm args)]
       (commit-mindmap hyper new-mm tree-attrs))))
 
 (defn set-cur

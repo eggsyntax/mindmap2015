@@ -25,7 +25,6 @@
     ; old cur is parent of new cur?
     (is (= (mm/parent-of new-mm new-node) (get-cur rand-ht)))))
 
-(test-alter-node)
 (deftest test-alter-node
   (let [rht (rand-hypertree 8 3 0)
         old-cur (get-cur rht)
@@ -34,9 +33,8 @@
         nht1 (alter-node rht nil {:title new-title :quip quip})
         new-cur1 (get-cur nht1)
         ; Now alter it again with pruning
-        nht2 (alter-node rht nil {:quip :remove-attr})
+        nht2 (alter-node nht1 nil {:quip :remove-attr})
         new-cur2 (get-cur nht2)
-        _ (println new-cur2)
         ]
     (is (= (:title new-cur1) new-title))
     (is (= (:quip new-cur1) quip))
@@ -45,7 +43,6 @@
     ; Pruned version:
     (is (= (:title new-cur2) new-title))
     (is (= (:quip new-cur2) nil))))
-(test-alter-node)
 
 (deftest test-get-cur
   (let [hyper (default-hypertree)]

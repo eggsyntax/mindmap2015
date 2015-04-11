@@ -4,6 +4,7 @@
   (:require [clojure.test :refer :all]
             [clojure.tools.namespace.repl :only  (refresh)]
             [mindmap.mm :as mm]
+            [mindmap.tree :as tr]
             [mindmap.util :as ut]))
 
 (deftest test-default-mindmap
@@ -61,11 +62,23 @@
 
 (deftest test-parent-nodes
   (let [[mmap n1 n2] (make-map)
-        _ (println (str "parent-nodes:"(parent-nodes @mmap n2)))
         parents-of-n2 (parent-nodes @mmap n2)
         parent-of-n2 (first parents-of-n2)]
     (is (= 1 (count parents-of-n2)))
     (is (= n1 parent-of-n2))))
+
+(deftest test-prune
+  (let [m {:1 1 :2 2 :3 :remove-attr :4 :remove-attr}
+        pruned (prune m)]
+    (is (= (keys pruned)  '(:1 :2)))))
+
+(deftest test-alter-node
+  (let [rmm (rand-mm :num-nodes 8 :seed 1)
+        cur (get-cur rmm)
+        new-title "Altered node"
+        new-mm (alter-node rmm {:title new-title})
+        ]
+    (is (= new-title (:title (get-cur new-mm))))))
 
 (deftest test-node-and-children
   (let [mmap (atom (default-mindmap))
@@ -110,11 +123,6 @@
     (swap! mmap remove-node-and-children n3)
     (is (= 2 (count (:nodes @mmap))))
     (is (= 1 (count (:edges @mmap))))))
-
- (deftest test-remove-node-and-children
-   (let [ [mmap n1 n2] (make-map) ] 
-     (ut/ppprint mmap)
-     ))
 
 (run-tests 'mindmap.test-mm)
 

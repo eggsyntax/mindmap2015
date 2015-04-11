@@ -1,9 +1,11 @@
 (ns mindmap.ht
   (:require [mindmap.util :as ut]
             [mindmap.mm :as mm]
+            [mindmap.tree :as tr] ;TODO temp
             [clojure.zip :as zip]
+            [clojure.stacktrace :as trace]
             )
-  (:gen-class))
+  (:gen-class)) ;TODO Why the gen-class here?
 
 ;TODO
 "
@@ -122,7 +124,9 @@
   ; the head mm of the hypertree, and return a modified hypertree containing
   ; (as head) the modified mm.
     (let [mm (get-head hyper)
-          new-mm (apply mm-f mm args) ]
+          new-mm (apply mm-f mm args)
+          _ (println "New cur (from make-alter-hypertree):" (mm/get-cur new-mm))
+          ]
       (commit-mindmap hyper new-mm tree-attrs))))
 
 (defn set-cur
@@ -178,9 +182,32 @@
   (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
     (alter-ht mm/remove-node-and-children node)))
 
+(defn alter-node-ht
+  "" ;TODO
+  ; Operate on cur by default
+  ([hyper tree-attrs new-content]
+   (alter-node-ht hyper tree-attrs (get-cur hyper) new-content))
+
+  ([hyper tree-attrs node new-content]
+   (let [_ (ut/ppprint node)
+         _ (ut/ppprint (tr/to-tree (get-head hyper)))
+         _ (println)
+         alter-ht (make-alter-hypertree hyper tree-attrs)
+         altered (try
+                   (alter-ht mm/alter-node node new-content)
+                   (catch Exception e (println "Exception!" (trace/print-stack-trace e)))
+                   )
+         _ (println "Type altered: " (type altered))
+         _ (println "Altered node (from ht):")
+         _ (ut/ppprint (get-cur altered))]
+     altered
+     )))
+
+(let [rht (rand-hypertree 8 3 0)]
+  (alter-node-ht rht {} {:title "waffle"}))
+
 (defn remove-edge
   "Removes an edge from the head of the hypertree Return the modified hypertree"
   [hyper edge tree-attrs]
   (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
     (alter-ht mm/remove-edge edge)))
-

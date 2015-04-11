@@ -228,19 +228,13 @@
     (catch AssertionError e
       nil)))
 
-(defn get-root
-  "Get root of mindmap relative to some node"
-  [mm node]
-  (loop [cur node]
-    (let [cur-parent (parent-if-exists mm cur)]
-      (if cur-parent
-        (recur cur-parent)
-        cur))))
-
-(defn get-cur-root
-  "Get root relative to current node"
-  [mm]
-  (get-root mm (get-cur mm)))
+(defn prune
+  "Remove any attributes on a mappish thing whose value is set to :remove-attr"
+  [mappish]
+  (let [prunable? #(= (val %) :remove-attr)
+        keys-to-prune (for [[k v] (seq mappish)]
+                        (when (= v :remove-attr) k))]
+    (apply dissoc mappish keys-to-prune)))
 
 (defn rand-mm
   "Convenience function to generate a random mindmap.
@@ -280,6 +274,55 @@
     ;(reduce add-extra-edge main-map (range num-extra-links))
 
     ))
+
+(defn alter-node
+  "Change the attributes of a node. New values are added, values for existing
+  keys are changed, and any values set to :remove-attr will be removed. id is
+  unchanged. Cur is unchanged, on the assumption that the typical use-case is
+  to call on cur (arity 2), and if you're specifying the node you'll want to
+  decide whether to make the altered node cur or not. Timestamp is unchanged.
+  Return the modified mindmap."
+  ;TODO do we change timestamp?
+    ; another option would be to keep a list of alteration-timestamps.
+  ;TODO consider saving changeset? Derivable at ht level, so maybe no need.
+  ;TODO might make some assertions here to ensure that (eg) id isn't changed
+  ([mm new-content]
+   (alter-node mm (get-cur mm) new-content))
+  ([mm node new-content]
+   (let [_ (println "Node at beginning of alter-node: " node)
+         _ (println "New-content at beginning of alter-node: " new-content)
+         altered-node (merge node new-content)
+         _ (println "Altered node:" altered-node)
+;          _ (println "type of :nodes is " (type (:nodes mm)))
+;          _ (println ":id node is " (:id node))
+;          _ (println ":nodes is " (ut/to-str (:nodes mm)))
+         altered-mm   (assoc-in mm [:nodes (:id node)] altered-node)
+         _ (println "Has been altered")
+         pruned-mm    (prune altered-mm)
+;          _ (println "Pruned!" (ut/to-str altered-mm))
+         _ (println "New cur: " (get-cur pruned-mm))
+         ]
+     pruned-mm)))
+
+(let [rmm (rand-mm)
+      new-content {:title "foo"}
+      ]
+  (alter-node rmm new-content)
+  )
+
+(defn get-root
+  "Get root of mindmap relative to some node"
+  [mm node]
+  (loop [cur node]
+    (let [cur-parent (parent-if-exists mm cur)]
+      (if cur-parent
+        (recur cur-parent)
+        cur))))
+
+(defn get-cur-root
+  "Get root relative to current node"
+  [mm]
+  (get-root mm (get-cur mm)))
 
 ;(ut/ppprint (rand-mm :num-nodes 3 :num-extra-links 1))
 ;(def r1 (rand-mm :num-nodes 6 :num-extra-links 1))

@@ -1,6 +1,8 @@
 (ns mindmap.test-ht
   (:use [mindmap.ht])
   (:require [clojure.test :refer :all]
+            [clojure.stacktrace :as trace]
+            [mindmap.util :as ut]
             [mindmap.mm :as mm]))
 
 (deftest test-default-hypertree
@@ -21,6 +23,23 @@
     (is (= (:title (get-cur new-ht)) "ENode1"))
     ; old cur is parent of new cur?
     (is (= (mm/parent-of new-mm new-node) (get-cur rand-ht)))))
+
+(try
+  (let [rht (rand-hypertree 8 3 0)
+;         old-head (get-head rht)
+        old-cur (get-cur rht)
+        _ (println "old cur: " (ut/to-str old-cur))
+        new-title "Altered node"
+        nht (alter-node-ht rht nil {:title new-title})
+;         _ (ut/ppprint nmm)
+        _ (println "OK that's it")
+        new-cur (get-cur nht)
+        ]
+  (println "New-cur"new-cur)
+  )
+  (catch Exception e (str "Exception local: " (trace/print-stack-trace e)))
+  )
+
 
 (deftest test-get-cur
   (let [hyper (default-hypertree)]

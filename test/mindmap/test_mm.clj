@@ -76,9 +76,14 @@
   (let [rmm (rand-mm :num-nodes 8 :seed 1)
         cur (get-cur rmm)
         new-title "Altered node"
-        new-mm (alter-node rmm {:title new-title})
-        ]
+        new-mm (alter-node rmm {:title new-title})]
     (is (= new-title (:title (get-cur new-mm))))))
+
+(deftest test-alter-node-with-pruning
+  (let [rmm (rand-mm :num-nodes 8 :seed 1)
+        cur (get-cur rmm)
+        new-mm (alter-node rmm {:title :remove-attr})]
+    (is (= (:title (get-cur new-mm)) nil))))
 
 (deftest test-node-and-children
   (let [mmap (atom (default-mindmap))
@@ -125,4 +130,3 @@
     (is (= 1 (count (:edges @mmap))))))
 
 (run-tests 'mindmap.test-mm)
-

@@ -182,29 +182,22 @@
   (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
     (alter-ht mm/remove-node-and-children node)))
 
-(defn alter-node-ht
-  "" ;TODO
+(defn alter-node
+  "Change the attributes of a single node in the head of this hypertree (by
+  default, the cur node). New values are added, values for existing keys are
+  changed, and any values set to :remove-attr will be removed. id is unchanged.
+  Cur is unchanged, on the assumption that the typical use-case is to call on
+  cur (arity 3), and if you're specifying the node, you'll want to make your own
+  decision about whether to change cur. Timestamp is unchanged. Return the modified
+  hypertree."
   ; Operate on cur by default
   ([hyper tree-attrs new-content]
-   (alter-node-ht hyper tree-attrs (get-cur hyper) new-content))
+   (alter-node hyper tree-attrs (get-cur hyper) new-content))
 
   ([hyper tree-attrs node new-content]
-   (let [_ (ut/ppprint node)
-         _ (ut/ppprint (tr/to-tree (get-head hyper)))
-         _ (println)
-         alter-ht (make-alter-hypertree hyper tree-attrs)
-         altered (try
-                   (alter-ht mm/alter-node node new-content)
-                   (catch Exception e (println "Exception!" (trace/print-stack-trace e)))
-                   )
-         _ (println "Type altered: " (type altered))
-         _ (println "Altered node (from ht):")
-         _ (ut/ppprint (get-cur altered))]
-     altered
-     )))
-
-(let [rht (rand-hypertree 8 3 0)]
-  (alter-node-ht rht {} {:title "waffle"}))
+   (let [alter-ht (make-alter-hypertree hyper tree-attrs)
+         altered (alter-ht mm/alter-node node new-content)]
+     altered)))
 
 (defn remove-edge
   "Removes an edge from the head of the hypertree Return the modified hypertree"

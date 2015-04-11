@@ -233,7 +233,8 @@
   [mappish]
   (let [prunable? #(= (val %) :remove-attr)
         keys-to-prune (for [[k v] (seq mappish)]
-                        (when (= v :remove-attr) k))]
+
+                        (do (println "K-V: " k " " v) (when (= v :remove-attr) (ut/logged "k is " k))))]
     (apply dissoc mappish keys-to-prune)))
 
 (defn rand-mm
@@ -242,7 +243,7 @@
   Optional arguments:
     :num-nodes        - Size of the mindmap (default 4)
     :seed             - for the RNG (default 255, or -1 to randomize)
-    :num-extra-links  - number of non-child links to add"
+    :num-extra-links  - number of non-child links to add (note: currently ignored)"
   [& {:keys [num-nodes seed num-extra-links]
       :or {num-nodes 4, seed -1, num-extra-links 0}}]
   (let [new-map (default-mindmap)
@@ -269,7 +270,7 @@
         main-map (reduce add-a-node new-map (range (- num-nodes 1)))
         ]
     ; Add extra edges if requested
-    ;TODO uncomment after finding indeterminacy
+    ;TODO turn on and test (replace next line with the one following)
     main-map
     ;(reduce add-extra-edge main-map (range num-extra-links))
 
@@ -296,19 +297,13 @@
 ;          _ (println "type of :nodes is " (type (:nodes mm)))
 ;          _ (println ":id node is " (:id node))
 ;          _ (println ":nodes is " (ut/to-str (:nodes mm)))
-         altered-mm   (assoc-in mm [:nodes (:id node)] altered-node)
+         pruned-node (prune altered-node)
+         altered-mm   (assoc-in mm [:nodes (:id node)] pruned-node)
          _ (println "Has been altered")
-         pruned-mm    (prune altered-mm)
-;          _ (println "Pruned!" (ut/to-str altered-mm))
-         _ (println "New cur: " (get-cur pruned-mm))
+         _ (println "Pruned!" (ut/to-str altered-mm))
+         _ (println "New cur: " (get-cur altered-mm))
          ]
-     pruned-mm)))
-
-(let [rmm (rand-mm)
-      new-content {:title "foo"}
-      ]
-  (alter-node rmm new-content)
-  )
+     altered-mm)))
 
 (defn get-root
   "Get root of mindmap relative to some node"

@@ -4,7 +4,12 @@ FIXME: description
 
 ## Installation
 
-Download from http://example.com/FIXME.
+
+### Developer installation
+
+lein test-refresh is available to run tests continually in the
+background and notify on failure. Requires terminal-notifier,
+see https://github.com/alloy/terminal-notifier 
 
 ## Usage
 

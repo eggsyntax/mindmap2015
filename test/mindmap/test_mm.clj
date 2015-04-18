@@ -39,8 +39,7 @@
   (let [[mmap n1 n2] (make-map)
         edge (first (edges-between @mmap n1 n2)) ]
     (is (= "Node 2" (:title n2)))
-    (is (= "Edge 1" (:title edge))) )
-)
+    (is (= "Edge 1" (:title edge))) ))
 
 (deftest test-add-2-leaf-tree
   (let [[mmap n1 n2] (make-map)

@@ -228,19 +228,13 @@
     (catch AssertionError e
       nil)))
 
-(defn get-root
-  "Get root of mindmap relative to some node"
-  [mm node]
-  (loop [cur node]
-    (let [cur-parent (parent-if-exists mm cur)]
-      (if cur-parent
-        (recur cur-parent)
-        cur))))
-
-(defn get-cur-root
-  "Get root relative to current node"
-  [mm]
-  (get-root mm (get-cur mm)))
+(defn prune
+  "Remove any attributes on a mappish thing whose value is set to :remove-attr"
+  [mappish]
+  (let [prunable? #(= (val %) :remove-attr)
+        keys-to-prune (for [[k v] (seq mappish)]
+                        (when (= v :remove-attr) (ut/logged "k is " k)))]
+    (apply dissoc mappish keys-to-prune)))
 
 (defn rand-mm
   "Convenience function to generate a random mindmap.
@@ -248,7 +242,7 @@
   Optional arguments:
     :num-nodes        - Size of the mindmap (default 4)
     :seed             - for the RNG (default 255, or -1 to randomize)
-    :num-extra-links  - number of non-child links to add"
+    :num-extra-links  - number of non-child links to add (note: currently ignored)"
   [& {:keys [num-nodes seed num-extra-links]
       :or {num-nodes 4, seed -1, num-extra-links 0}}]
   (let [new-map (default-mindmap)
@@ -275,11 +269,44 @@
         main-map (reduce add-a-node new-map (range (- num-nodes 1)))
         ]
     ; Add extra edges if requested
-    ;TODO uncomment after finding indeterminacy
+    ;TODO turn on and test (replace next line with the one following)
     main-map
     ;(reduce add-extra-edge main-map (range num-extra-links))
 
     ))
+
+(defn alter-node
+  "Change the attributes of a node. New values are added, values for existing
+  keys are changed, and any values set to :remove-attr will be removed. id is
+  unchanged. Cur is unchanged, on the assumption that the typical use-case is
+  to call on cur (arity 2), and if you're specifying the node you'll want to
+  decide whether to make the altered node cur or not. Timestamp is unchanged.
+  Return the modified mindmap."
+  ;TODO do we change timestamp?
+    ; another option would be to keep a list of alteration-timestamps.
+  ;TODO consider saving changeset? Derivable at ht level, so maybe no need.
+  ;TODO might make some assertions here to ensure that (eg) id isn't changed
+  ([mm new-content]
+   (alter-node mm (get-cur mm) new-content))
+  ([mm node new-content]
+   (let [altered-node (merge node new-content)
+         pruned-node (prune altered-node)
+         altered-mm   (assoc-in mm [:nodes (:id node)] pruned-node)]
+     altered-mm)))
+
+(defn get-root
+  "Get root of mindmap relative to some node"
+  [mm node]
+  (loop [cur node]
+    (let [cur-parent (parent-if-exists mm cur)]
+      (if cur-parent
+        (recur cur-parent)
+        cur))))
+
+(defn get-cur-root
+  "Get root relative to current node"
+  [mm]
+  (get-root mm (get-cur mm)))
 
 ;(ut/ppprint (rand-mm :num-nodes 3 :num-extra-links 1))
 ;(def r1 (rand-mm :num-nodes 6 :num-extra-links 1))

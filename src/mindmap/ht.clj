@@ -1,9 +1,11 @@
 (ns mindmap.ht
   (:require [mindmap.util :as ut]
             [mindmap.mm :as mm]
+            [mindmap.tree :as tr] ;TODO temp
             [clojure.zip :as zip]
+            [clojure.stacktrace :as trace]
             )
-  (:gen-class))
+  (:gen-class)) ;TODO Why the gen-class here?
 
 ;TODO
 "
@@ -122,7 +124,7 @@
   ; the head mm of the hypertree, and return a modified hypertree containing
   ; (as head) the modified mm.
     (let [mm (get-head hyper)
-          new-mm (apply mm-f mm args) ]
+          new-mm (apply mm-f mm args)]
       (commit-mindmap hyper new-mm tree-attrs))))
 
 (defn set-cur
@@ -178,9 +180,25 @@
   (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
     (alter-ht mm/remove-node-and-children node)))
 
+(defn alter-node
+  "Change the attributes of a single node in the head of this hypertree (by
+  default, the cur node). New values are added, values for existing keys are
+  changed, and any values set to :remove-attr will be removed. id is unchanged.
+  Cur is unchanged, on the assumption that the typical use-case is to call on
+  cur (arity 3), and if you're specifying the node, you'll want to make your own
+  decision about whether to change cur. Timestamp is unchanged. Return the modified
+  hypertree."
+  ; Operate on cur by default
+  ([hyper tree-attrs new-content]
+   (alter-node hyper tree-attrs (get-cur hyper) new-content))
+
+  ([hyper tree-attrs node new-content]
+   (let [alter-ht (make-alter-hypertree hyper tree-attrs)
+         altered (alter-ht mm/alter-node node new-content)]
+     altered)))
+
 (defn remove-edge
   "Removes an edge from the head of the hypertree Return the modified hypertree"
   [hyper edge tree-attrs]
   (let [alter-ht (make-alter-hypertree hyper tree-attrs)]
     (alter-ht mm/remove-edge edge)))
-

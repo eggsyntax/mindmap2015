@@ -142,13 +142,6 @@
   [tr]
   (tree-map tr  #(str (:title %) " (" (:id %) ")")))
 
-(let [_ (ut/reset-indexer)
-      rmm (rand-mm :num-nodes 8 :seed 1)
-      ;_ (ut/ppprint rmm)
-      ;_ (println)
-      ]
-  (ut/ppprint (make-node-edge-map rmm)))
-
 (defn tree-ez-timestamp
   "DEPRECATED - the epoch functionality in util is now the better approach.
   Leaving this here for a while as an example of how to use tree-map.
@@ -160,18 +153,14 @@
                    ;(update-in nd [:timestamp] inc)
                    ))))
 
-(def mrmm (rand-mm :num-nodes 8 :seed 3))
-(ut/ppprint mrmm)
+;(def mrmm (rand-mm :num-nodes 8 :seed 3))
 
 ; Example tree
 (defn ex-tree []
   (let [_ (ut/reset-indexer)
         _ (ut/reset-epoch)
         rmm (rand-mm :num-nodes 8 :seed 1)
-        root (get-cur-root rmm)
-        my-tree (to-tree rmm root)
-        _ (ppprint my-tree)
-        ]
-    (ut/ppprint (tree-ids my-tree))))
+        root (get-cur-root rmm)]
+    (to-tree rmm root)))
 
 ;(ex-tree)

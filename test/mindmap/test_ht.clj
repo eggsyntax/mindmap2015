@@ -1,6 +1,9 @@
 (ns mindmap.test-ht
   (:use [mindmap.ht])
   (:require [clojure.test :refer :all]
+            [clojure.stacktrace :as trace]
+            [mindmap.util :as ut]
+            [mindmap.tree :as tr]
             [mindmap.mm :as mm]))
 
 (deftest test-default-hypertree
@@ -21,6 +24,25 @@
     (is (= (:title (get-cur new-ht)) "ENode1"))
     ; old cur is parent of new cur?
     (is (= (mm/parent-of new-mm new-node) (get-cur rand-ht)))))
+
+(deftest test-alter-node
+  (let [rht (rand-hypertree 8 3 0)
+        old-cur (get-cur rht)
+        new-title "Altered node"
+        quip "Now you see me..."
+        nht1 (alter-node rht nil {:title new-title :quip quip})
+        new-cur1 (get-cur nht1)
+        ; Now alter it again with pruning
+        nht2 (alter-node nht1 nil {:quip :remove-attr})
+        new-cur2 (get-cur nht2)
+        ]
+    (is (= (:title new-cur1) new-title))
+    (is (= (:quip new-cur1) quip))
+    (is (= (:id new-cur1) (:id old-cur)))
+    (is (= (:id new-cur1) (:id old-cur)))
+    ; Pruned version:
+    (is (= (:title new-cur2) new-title))
+    (is (= (:quip new-cur2) nil))))
 
 (deftest test-get-cur
   (let [hyper (default-hypertree)]

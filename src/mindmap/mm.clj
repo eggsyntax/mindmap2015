@@ -233,7 +233,7 @@
   [mappish]
   (let [prunable? #(= (val %) :remove-attr)
         keys-to-prune (for [[k v] (seq mappish)]
-                        (when (= v :remove-attr) (ut/logged "k is " k)))]
+                        (when (= v :remove-attr) k))]
     (apply dissoc mappish keys-to-prune)))
 
 (defn rand-mm
@@ -243,6 +243,8 @@
     :num-nodes        - Size of the mindmap (default 4)
     :seed             - for the RNG (default 255, or -1 to randomize)
     :num-extra-links  - number of non-child links to add (note: currently ignored)"
+  ;TODO make one or both of some-node/add-a-node functions pluggable while
+  ; defaulting to current strategy.
   [& {:keys [num-nodes seed num-extra-links]
       :or {num-nodes 4, seed -1, num-extra-links 0}}]
   (let [new-map (default-mindmap)

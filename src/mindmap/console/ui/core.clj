@@ -1,14 +1,44 @@
 (ns mindmap.console.ui.core
-  (:require [mindmap.util :as ut]))
+  (:require [mindmap.util :as ut])
+  (:require [lanterna.screen :as s]))
+
+; UI drawing directives
+;
+(defrecord UI [action])
+
+; Screen functions -----------------------------------------------------
+;
+(def screen (ref nil))
 
 ; Kept up to date by drawing. 
 (def screen-size (ref [80 24]))
 
-(defrecord UI [action])
+(defn handle-resize
+  [cols rows] 
+  (dosync (ref-set screen-size [cols rows])))
+
+; TODO There is a bug where the intial size of in-term 
+;      (:text) is badly off so there is screen cruft until 
+;      you interact a bit
+(defn create-screen 
+  [screen-type]
+  (let [sc (s/get-screen screen-type {:resize-listener handle-resize})
+        cur-size (s/get-size sc)
+        [cols rows] cur-size]
+    (handle-resize cols rows)
+    (dosync (ref-set screen sc))
+    @screen))
+
+(defn get-input 
+  [context]
+  (let [; Get one character at a time accumulating it
+        ; unless its fully processed
+        input (s/get-key-blocking @screen)]
+    (println "get-input> input=" input)
+    (assoc context :input input)))
 
 ; ------------- Input Buffer Functions ------------------------
 ;
-
 (defn save-input
   [context input]
   (assoc 

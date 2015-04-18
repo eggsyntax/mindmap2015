@@ -10,12 +10,10 @@
 ;
 (defrecord Context  [screen mode style hyper uis input input-buffer])
 
-(defn new-context  [screen]
-    (map->Context {:screen screen
-                   :mode :navigate
+(defn new-context  []
+    (map->Context {:mode :navigate
                    :style :quickndirty
-                   ; 100-node random hypertree with 5 non-child links
-                   :hyper (ht/rand-hypertree 100 -1 5)
+                   :hyper (ht/rand-hypertree 5 -1 0)
                    :uis [(->UI :header)
                          (->UI :vis-hyper)
                          (->UI :cmd-line-inspect-node)]
@@ -42,22 +40,24 @@
 (defn run-app
   [start-context]
   ; Can u directly use a record ?
-  (loop [{:keys [screen mode style hyper uis input input-buffer] :as context} start-context] 
+  (loop [{:keys [mode style hyper uis input input-buffer] :as context} start-context] 
       (when (not= :exit mode)
         (if (nil? input)
           (do 
             (draw-app context) ; Pure function 
-            (let [new-context (dissoc context :uis)]
-              (recur (get-input new-context))))
+            (let [next-context (dissoc context :uis)]
+              (recur (get-input next-context))))
           (recur (process-input (dissoc context :input) input))))))
 
 (defn main
     ([screen-type]  (main screen-type false))
     ([screen-type block?]
       (letfn  [(go  []
-         (let  [screen  (create-screen screen-type)]
-            (s/in-screen screen
-              (run-app  (new-context screen)))))]
+         (let  [n-screen  (create-screen screen-type)
+                _ (println "core::main> Screen=" n-screen)
+                ]
+            (s/in-screen n-screen
+              (run-app (new-context)))))]
                (if block?
                 (go)
                 (future (go))))))

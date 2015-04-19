@@ -3,15 +3,6 @@
   (:import [mindmap.console.ui.core UI])
   (:require [lanterna.screen :as s]))
 
-(defn get-input 
-  [context]
-  (let [screen (:screen context)
-        ; Get one character at a time accumulating it
-        ; unless its fully processed
-        input (s/get-key-blocking screen)]
-    (println "get-input> input=" input)
-    (assoc context :input input)))
-
 ; Processes the input given the input mode 
 ; 
 (defmulti process-input :mode)
@@ -23,6 +14,7 @@
 (defmethod process-input :navigate 
   [context input]
   (let [cleared-context (clear-input-history context)]
+    (println "process-input> (:naviate) input=" input)
     (case input
      \q  (-> cleared-context
             (assoc :uis [(->UI :exit-screen)])

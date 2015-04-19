@@ -14,6 +14,7 @@
 (defmethod process-input :navigate 
   [context input]
   (let [cleared-context (clear-input-history context)]
+    (println "process-input> (:naviate) input=" input)
     (case input
      \q  (-> cleared-context
             (assoc :uis [(->UI :exit-screen)])

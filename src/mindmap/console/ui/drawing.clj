@@ -60,10 +60,12 @@
 
 (defn print-depth-node
   [row node]
-  (let [col (:depth node)]
+  (let [col (:depth node)
+        pad 5
+        ]
     (if (:is-cur node)
-      (s/put-string @core/screen col (+ 5 row) (:title node) {:fg :green})
-      (s/put-string @core/screen col (+ 5 row) (:title node))
+      (s/put-string @core/screen col (+ pad row) (:title node) {:fg :green})
+      (s/put-string @core/screen col (+ pad row) (:title node))
       )
     (inc row)))
 
@@ -99,8 +101,6 @@
 
 (defmethod draw-ui :cmd-line-inspect-node 
   [ui context]
-  ; TODO print info for cur-node
-  (println "cmd-line> context: " context)
   (let [mm (ht/get-head (:hyper context))
         node (mm/get-cur mm)
         id (:id node)
@@ -116,7 +116,6 @@
 
 (defn draw-app [context]
   "The main render loop"
-   (println "draw-app screen=" @core/screen)
    (s/clear @core/screen)
    (doseq [ui (:uis context)]
       (draw-ui ui context))

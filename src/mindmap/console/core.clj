@@ -13,7 +13,7 @@
 (defn new-context  []
     (map->Context {:mode :navigate
                    :style :quickndirty
-                   :hyper (ht/rand-hypertree 5 -1 0)
+                   :hyper (ht/rand-hypertree 15 -1 0)
                    :uis [(->UI :header)
                          (->UI :vis-hyper)
                          (->UI :cmd-line-inspect-node)]
@@ -53,9 +53,7 @@
     ([screen-type]  (main screen-type false))
     ([screen-type block?]
       (letfn  [(go  []
-         (let  [n-screen  (create-screen screen-type)
-                _ (println "core::main> Screen=" n-screen)
-                ]
+         (let  [n-screen  (create-screen screen-type) ]
             (s/in-screen n-screen
               (run-app (new-context)))))]
                (if block?

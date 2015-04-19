@@ -39,6 +39,11 @@
 (defn default-hypertree []
   (hypertree-from-mindmap (mm/default-mindmap)))
 
+(defn ht-from-map
+  "Mainly for deserialization"
+  [ht-map]
+  (Hypertree. (:nodes ht-map) (:head-pointer ht-map)))
+
 (defn rand-hypertree
  "Convenience function to generate a random mindmap.
     num-nodes        - Size of the mindmap  (default 4)

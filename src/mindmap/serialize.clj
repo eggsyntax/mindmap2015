@@ -1,6 +1,10 @@
 (ns mindmap.serialize
   (use [mindmap.util :only [to-str]])
-  (require [clojure.edn :as edn])
+  (require [clojure.edn :as edn]
+           [mindmap.util :as ut]
+           [clojure.zip :as zip]
+           [mindmap.mm :as mm]
+           [mindmap.ht :as ht])
   )
 
 
@@ -30,6 +34,12 @@
   (to-str item))
 
 (defn deserialize-from-edn
+  "Takes a string (eg from a slurped file)"
   [text-chunk]
-  (edn/read text-chunk)
-  )
+  (ht/ht-from-map (edn/read-string text-chunk)))
+
+(defn save-ht [filename hype]
+  (spit filename (serialize-to-edn hype)))
+
+(defn load-ht [filename]
+  (deserialize-from-edn (slurp filename)))

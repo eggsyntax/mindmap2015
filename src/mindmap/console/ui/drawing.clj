@@ -61,8 +61,10 @@
 (defn print-depth-node
   [row node]
   (let [col (:depth node)]
-    (println row "x" col "Title:" (:title node)) 
-    (s/put-string @core/screen col (+ 5 row) (:title node))
+    (if (:is-cur node)
+      (s/put-string @core/screen col (+ 5 row) (:title node) {:fg :green})
+      (s/put-string @core/screen col (+ 5 row) (:title node))
+      )
     (inc row)))
 
 (defn print-tree
@@ -73,14 +75,14 @@
 
 (defn draw-quick-n-dirty-tree
   [context]
-  (let [ msg "EZ Tree"
-        mm (ht/get-head (:hyper context))
-        tree (tree/to-tree mm) ]
+  (let [mm (ht/get-head (:hyper context))
+        ; Annotate the node that's currently selected
+        marked-mm (mm/alter-node mm {:is-cur true})
+        tree (tree/to-tree marked-mm) ]
     (print-tree tree)))
 
 ; UI Handlers ----------------------------------------------------------------
 ;
-
 (defmulti draw-ui :action)
 
 (defmethod draw-ui :default 
@@ -97,9 +99,15 @@
 
 (defmethod draw-ui :cmd-line-inspect-node 
   [ui context]
-  (draw-cmdline context (core/get-history-string context))
-  ; Pull Out Node Title for display
-  )
+  ; TODO print info for cur-node
+  (println "cmd-line> context: " context)
+  (let [mm (ht/get-head (:hyper context))
+        node (mm/get-cur mm)
+        id (:id node)
+        title (:title node)
+        timestamp (:timestamp node) 
+        msg (str title " [id=" id " timestamp=" timestamp "]") ]
+    (draw-cmdline context msg)))
 
 (defmethod draw-ui :exit-screen 
   [ui context]

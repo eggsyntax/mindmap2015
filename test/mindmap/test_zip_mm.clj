@@ -1,7 +1,7 @@
 (ns mindmap.test-zip-mm
-  (:use [mindmap.zip-mm]
-        [clojure.test])
-  (:require [clojure.zip :as z]
+  (:use [clojure.test])
+  (:require [mindmap.zip-mm :refer :all]
+            [clojure.zip :as z]
             [mindmap.util :as ut]
             [mindmap.tree :as tr]
             [mindmap.mm :as mm]))

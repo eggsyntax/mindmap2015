@@ -66,8 +66,7 @@
 (defn logged
   "Wrap any form in logged to have it printed to the console."
   [string stuff]
-  (do
-    (println string stuff)
+  (let [_ (println string stuff)]
     eval stuff))
 
 ;(logged "test-log" '("foo" "bar")) ;test
@@ -87,8 +86,9 @@
     (let [root (zip/node (:nodes hype))]
       (:mm root))))
 
-(defn spaces [n]
+(defn spaces
   "Get some spaces for padding a string"
+  [n]
   (take (* n 2) (repeat \space)))
 
 (spaces 5)

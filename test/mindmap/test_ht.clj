@@ -1,6 +1,6 @@
 (ns mindmap.test-ht
-  (:use [mindmap.ht])
-  (:require [clojure.test :refer :all]
+  (:require [mindmap.ht :refer :all]
+            [clojure.test :refer :all]
             [clojure.stacktrace :as trace]
             [mindmap.util :as ut]
             [mindmap.tree :as tr]

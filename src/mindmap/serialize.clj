@@ -1,11 +1,10 @@
 (ns mindmap.serialize
-  (use [mindmap.util :only [to-str]])
-  (require [clojure.edn :as edn]
-           [mindmap.util :as ut]
-           [clojure.zip :as zip]
-           [mindmap.mm :as mm]
-           [mindmap.ht :as ht])
-  )
+  (:use [mindmap.util :only [to-str]])
+  (:require [clojure.edn :as edn]
+            [mindmap.util :as ut]
+            [clojure.zip :as zip]
+            [mindmap.mm :as mm]
+            [mindmap.ht :as ht]))
 
 
 ;TODO except hmm, do we want timestamps for mindmaps rather than hypermaps? Hmm.

@@ -26,13 +26,6 @@
            (is (= cur (mm/parent-of new-mmap new-cur)))
            (recur new-mmap (- i 1)))))))
 
-(defn test-to-tree [num-nodes]
-   (let [mm (mm/rand-mm)
-         root (last (vals (:nodes mm)))]
-     (ut/ppprint root)
-     (ut/ppprint (to-tree mm root 5))))
-;(test-to-tree)
-
 (deftest test-tree-ids
   (let [_ (ut/reset-indexer)
         rmm (rand-mm :num-nodes 8 :seed 3)

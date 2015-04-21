@@ -1,7 +1,7 @@
 (ns mindmap.tree
-  (:use [mindmap.mm]
-        [mindmap.util :as ut]
-        [clojure.walk :as walk]))
+  (:use [clojure.walk :only [postwalk]])
+  (:require [mindmap.mm :refer :all]
+            [mindmap.util :as ut]))
 
 "Functions for returning tree views of mindmaps"
 
